@@ -1,0 +1,190 @@
+---
+title: "PEC1_scipt"
+author: "Gabriel Regueira Huguet"
+date: "2025-03-20"
+output: html_document
+---
+
+**1) Seleccionar el dataset**: Hem seleccionat el dataset del repositori Github proporcionat a l'enunciat de la PEC1 anomenat Datasets/2018-MetabotypingPaper ("Metabotypes of response to bariatric surgery independent of the magnitude of weight loss"). Aquest dataset està format per tres fixers:
+
+- DataInfo_S013.csv: Metadata. Informació de cada columna del fixer "DataValues_S013.csv". 
+- DataValues_S013.csv: Valors clínics i metabolòmics de 39 pacients en 5 temps diferents.
+- AAInformation_S006.csv: Informació adicional sobre els metabòlits de "DataValues_S013.csv". 
+
+```{r}
+library(SummarizedExperiment) #Carregeum el paquet 
+library(readr) #Per llegir arxius csv
+library(readxl) #Per llegir arxius exzcel
+library(dplyr)
+```
+
+```{r}
+data_info <- read_csv("human_cachexia.csv")
+```
+
+Utilitzarem l'experiment human cachexia ja que només té un document i se suposa que es de qualitat
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("metabolomicsWorkbenchR")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hem posat les dades metabolòmiques descarregades a la carpeta del projecte vinculat al repositori github per a aquesta PEC1:
+```{r}
+data_info <- read_csv("DataInfo_S013.csv")
+data_values <- read_csv("DataValues_S013.csv")
+```
+```{r}
+getwd()
+```
+Comprobem que els fixers descarregats es troben en el mateix directori de treball vinculat a github:
+
+```{r}
+list.files()
+```
+
+```{r}
+View(data_values)
+View(data_info)
+```
+
+**2) Crear *SummarizedExperiment* **
+
+Primerament hem de transformar les dades en una matriu perquè *summarizedExperiment* només treballa amb dades numèriques: 
+
+```{r}
+rownames(data_values) <- data_values$SUBJECTS #Fem servir els valors de la primera columna com a noms de fila
+#Eliminem la columna SUBJECTS de les dades
+data_values <- data_values[,-which(names(data_values) == "SUBJECTS")]
+#Eliminem una columna extra que hi havia per defecte
+data_values <- data_values[,-1]
+View(data_values)
+#Ara la columna SUBJECTS no hi és però observem que les files tenen el nom de SUBJECTS (en aquest cas números dels 39 pacients)
+row.names(data_values)
+```
+
+
+```{r}
+
+#Convertim en matriu
+data_matrix <- as.matrix(data_values)
+se <- SummarizedExperiment(t(data_matrix), colData = data_info)
+se
+```
+
+
+```{r}
+colnames(data_matrix) <- data_info$SUBJECTS
+```
+
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("metabolomicsWorkbenchR")
+```
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(c("mzR", "MSnbase"))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
