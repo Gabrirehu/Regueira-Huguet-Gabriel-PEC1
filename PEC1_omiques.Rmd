@@ -30,7 +30,7 @@ View(data_info)
 
 
 **2) Crear SummarizedExperiment**:
-
+   
 Un cop tenim les dades accessibles procedim a crear el *SUmmarizedExperiment*:
 ```{r}
 #Extraïem les metadades de les mostres (colData):
@@ -140,7 +140,7 @@ summary(pca)
 
 _________________________________________________________________________________________________________________________________________________
 
-
+NORMALIZACION DE LOS DATOS
 
 
 ```{r}
@@ -177,8 +177,15 @@ Amb aquests gràfics veiem com afecta normalitzar les dades abans de fer l'anàl
 
 
 ```{r}
+colData(norm_data)$group_factor <- colData(norm_data)$Muscle.loss
 
 ```
+```{r}
+colnames(colData(norm_data))[colnames(colData(norm_data)) == "Muscle.loss"] <- "group_factor"
+
+```
+
+
 ```{r}
 norm_data
 ```
@@ -192,33 +199,8 @@ packageVersion("POMA")
 
 
 ```{r}
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager")
-}
-
-# Este paso asegura que estás usando la versión buena de Bioconductor
-BiocManager::install(version = "3.20")
-
-
-# Ahora sí: instalar la versión correcta y limpia de POMA
-BiocManager::install("POMA", force = TRUE, ask = FALSE)
-
-
+PomaOutliers(norm_data)$polygon_plot
 ```
-
-
-
-```{r}
-packageVersion("POMA")
-args(POMA::PomaOutliers)
-
-```
-
-
-
-
-
-
 
 
 
