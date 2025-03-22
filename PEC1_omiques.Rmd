@@ -2,7 +2,9 @@
 title: "PEC1_scipt"
 author: "Gabriel Regueira Huguet"
 date: "2025-03-20"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 **1) Seleccionar el dataset**: Hem seleccionat el dataset del repositori Github proporcionat a l'enunciat de la PEC1 anomenat 2024-Cachexia
@@ -72,6 +74,10 @@ names(SumExp)
 ```{r}
 rownames(SumExp)[1:5]
 ```
+*****FALTEN MES ANALAISIS
+
+
+
 
 **Análisis exploratorio**
 
@@ -105,13 +111,6 @@ Por ejemplo, aquí podemos observar que las concentraciones de creatina en pacie
 
 
 
-
-
-
-
-
-
-
 ______________________________________________________________________________________________________________________________________________________
 
 **PROVA PCA**
@@ -134,14 +133,7 @@ summary(pca)
 plot(pca, type = "l", main = "Scree plot", col = "darkblue")
 ```
 
-```{r}
-library(ggplot2)
 
-ggplot(pca_dataframe, aes(x = PC1, y = PC2, color = Muscle.loss)) +
-  geom_point(size = 3) +
-  labs(title = "PCA", x = "PC1", y = "PC2") + 
-  theme_minimal()
-```
 ```{r}
 summary(pca)
 ```
@@ -149,127 +141,92 @@ summary(pca)
 _________________________________________________________________________________________________________________________________________________
 
 
+
+
 ```{r}
+library(POMA)
+library(ggplot2)
+library(ggtext)
 library(POMA)
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Hem posat les dades metabolòmiques descarregades a la carpeta del projecte vinculat al repositori github per a aquesta PEC1:
 ```{r}
-data_info <- read_csv("DataInfo_S013.csv")
-data_values <- read_csv("DataValues_S013.csv")
-```
-```{r}
-getwd()
-```
-Comprobem que els fixers descarregats es troben en el mateix directori de treball vinculat a github:
-
-```{r}
-list.files()
-```
-
-```{r}
-View(data_values)
-View(data_info)
-```
-
-**2) Crear *SummarizedExperiment* **
-
-Primerament hem de transformar les dades en una matriu perquè *summarizedExperiment* només treballa amb dades numèriques: 
-
-```{r}
-rownames(data_values) <- data_values$SUBJECTS #Fem servir els valors de la primera columna com a noms de fila
-#Eliminem la columna SUBJECTS de les dades
-data_values <- data_values[,-which(names(data_values) == "SUBJECTS")]
-#Eliminem una columna extra que hi havia per defecte
-data_values <- data_values[,-1]
-View(data_values)
-#Ara la columna SUBJECTS no hi és però observem que les files tenen el nom de SUBJECTS (en aquest cas números dels 39 pacients)
-row.names(data_values)
+#Normalización de los datos con el paquete POMA
+norm_data <- PomaNorm(SumExp, method = "log_pareto") # 
 ```
 
 
 ```{r}
+class(norm_data)
+```
 
-#Convertim en matriu
-data_matrix <- as.matrix(data_values)
-se <- SummarizedExperiment(t(data_matrix), colData = data_info)
-se
+```{r}
+# Seleccionamos 10 metabolitos al azar 
+selected_features <- c("Citrate", "Lactate", "Glucose", "Alanine", "Creatine", "Glucos", "Glutamine", "Glycine", "Glycolate", "Piruvate")
+
+PomaDensity(SumExp, x = "features", feature_name = selected_features) +
+  ggtitle("Distribución de 10 metabolitos seleccionados")
+
+```
+
+```{r}
+PomaDensity(norm_data, x = "features", feature_name = selected_features) +
+  ggtitle("Distribución de 10 metabolitos seleccionados")
+```
+Amb aquests gràfics veiem com afecta normalitzar les dades abans de fer l'anàlisi estadístic propi. 
+
+
+```{r}
+
+```
+```{r}
+norm_data
 ```
 
 
 ```{r}
-colnames(data_matrix) <- data_info$SUBJECTS
+args(POMA::PomaOutliers)
+packageVersion("POMA")
+
 ```
 
-
-
-_____________________________________________________________________________________________________________________________________________________
 
 ```{r}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install("metabolomicsWorkbenchR")
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+
+# Este paso asegura que estás usando la versión buena de Bioconductor
+BiocManager::install(version = "3.20")
+
+
+# Ahora sí: instalar la versión correcta y limpia de POMA
+BiocManager::install("POMA", force = TRUE, ask = FALSE)
+
+
 ```
+
+
 
 ```{r}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(c("mzR", "MSnbase"))
+packageVersion("POMA")
+args(POMA::PomaOutliers)
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
