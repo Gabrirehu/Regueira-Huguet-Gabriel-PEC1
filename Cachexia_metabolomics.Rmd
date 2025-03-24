@@ -1,0 +1,87 @@
+---
+title: "PROBA"
+author: "Gabriel Regueira Huguet"
+date: "2025-03-22"
+output: html_document
+---
+
+Se ha descubierto que el dataset de cachexia ya esta en un paquete llamado specmine.dataset:
+```{r}
+library(specmine.datasets)
+data("cachexia")
+View(cachexia)
+View(cachexia$data)
+View(cachexia$type)
+View(cachexia$description)
+View(cachexia$metadata)
+View(cachexia$labels)
+```
+
+```{r}
+class(cachexia)
+```
+
+Com podem observar, cachexia és una llista personalitzada utilitzada per el paquet specmine.datasets. Al executar View(cachecia) no surt una taula de dades convencional, sinó una vista estructurada dels components del dataset *cachexia*.
+
+Observem en el dataset de *cachexia* que aquest té diferents elements:
+
+- data: matriu 63 x 77 (metabolites x mostres)
+
+- metadata: data.frame amb informació sobre cada mostra (grup) 
+
+- description: petita descripció sobre les dades
+
+Ara procedim a crear el *SummarizedExperiment*:
+
+```{r}
+library(SummarizedExperiment)
+#Convertim cachexia$data a una matriu R per tal que SummarizedExperiment accepti el format i formi part del component assays
+assay_data <- as.matrix(cachexia$data)
+#Agafem cachexia$metadata i ens assegurem que els noms de les files coincideixin amb le nom de les columnes de la matriu de dades (assay):
+col_metadata <- cachexia$metadata
+rownames(col_metadata) <- colnames(assay_data)
+#Creem l'objecte SummarizedExperiment amb la matriu de dades empaquetada en una llista (counts) i les metadades de les columnes (mostres)
+se <- SummarizedExperiment(
+  assays = list(counts = assay_data),
+  colData = col_metadata
+)
+```
+
+
+```{r}
+se
+```
+```{r}
+View(assay(se))
+View(colData(se))
+colData(se)
+```
+```{r}
+colnames(colData(se))
+```
+```{r}
+se
+```
+Una vegada creat el *SummarizedExperiment*, el guardarem en un arxiu en format .Rda com indica l'enunciat:
+
+```{r}
+save(se, file = "se_cachexia.rda")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
