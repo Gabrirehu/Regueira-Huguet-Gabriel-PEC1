@@ -7,6 +7,7 @@ output: html_document
 
 ```{r}
 library(metabolomicsWorkbenchR)
+library(jsonlite)
 ```
 
 ```{r}
@@ -39,4 +40,10 @@ mwQuery(
   output_file = "ST000551.csv"
 )
 ```
+```{r}
+print("porfin")
+```
 
+```{r}
+rmarkdown::pandoc_available()
+```
