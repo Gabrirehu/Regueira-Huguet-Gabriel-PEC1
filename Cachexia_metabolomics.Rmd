@@ -69,6 +69,154 @@ save(se, file = "se_cachexia.rda")
 ```
 
 
+**ANÀLISIS EXPLORATORI**
+
+```{r}
+load("se_cachexia.rda")
+```
+
+```{r}
+apply(assay(se), 1, summary)
+```
+```{r}
+dim(se) #Nombre de files i columnes 
+```
+Ena quest cas, es pot deduïr que les variables són 63 concentracions de metabòlits analitzats en la orina de 77 individus. Totes les variables, doncs, són numèriques. 
+
+```{r}
+anyNA(assay(se)) #No hi ha valors faltants (NA) en la matriu de dades 
+```
+
+
+
+```{r}
+colnames(colData(se))
+```
+```{r}
+colData(se)
+```
+Podem observar de forma general que aquestes dades consten d'un OOP *summarizedExperiment* on la matriu de dades està format per 77 pacients (columnes) els quals estàn dividits pel grup "Muscle.Loss" i 63 metabòlits (files) que són les concentracions de diferents metabòlits analitzades en les mostres d'orina proporcionades pels pacients. 
+
+
+
+
+```{r}
+Creatina <- assay(se)["Creatine", ] #Extraim le concentracions del metabòlit "creatine"
+muscle_loss <- colData(se)$Muscle.loss #ExtraIm el grup Muscle.loss
+#Creem un histograma 
+hist(Creatina,
+     main = "Creatina segons",
+     xlab = "Concentració",
+     col = "lightblue")
+```
+```{r}
+boxplot(Creatina ~ muscle_loss,
+        main = "Creatina segons Muscle.loss",
+        xlab = "Grup",
+        ylab = "Concentració de creatina",
+        ylim = c(0, 1000))
+```
+```{r}
+t.test(Creatina ~ muscle_loss)
+```
+Mitjançant aquest anàlisi bàsic podem observar que el metabòlit creatina mostra una diferència significativa en la concentració entre els grups Muscle.loss. Observem que la mitjana en el grup que tenen *cachexia* (pèrdua constant de massa muscular) és significativament superior (174.91) a la del grup control (51.50) amb un interval de confiança de [20.32 - 226.50]. Aquests resultats poden indicar que la concentració de creatina en la orina podria estar relacionada amb l'estat de cachexia i, per tant, podria ser un potencial marcador per ajudar a diagnosticar aquesta malaltia. 
+
+
+```{r}
+rownames(se)
+```
+
+Seguidament, sseguirem amb l'anàlisis estadístic descriptiu mitjançant un boxplot múltiple. Com que no podem fer un boxplot dels 63 metabòlits, farem un t-test univariant per a cada metabòlit i seleccionarem els 6 metabòlits que tinguin p-valors més baixos. 
+
+```{r}
+metab <- assay(se)
+group <- colData(se)$Muscle.loss
+#Fem un t-test per a cada metabòlit i guardem els p-valors dels t-tests
+p_valors <- apply(metab, 1, function(x) {
+  tryCatch(t.test(x ~ group)$p.value, error = function(e) NA)
+})
+#Ordenem els metabòlits segons els p-valors que tinguin del t-test
+p_valors_ordenats <- sort(p_valors)
+top_metabolits <- names(p_valors_ordenats)[1:4]
+top_metabolits
+```
+Aquests són els metabòlits que han donat més nivell de significació fent el t-test segons la variable grup *Muscle.loss*. Per tant, haurien de ser els que tenen diferències més significatives de concentracions segons si els pacients tenen *cachexia* o no. 
+
+```{r}
+library(reshape2)
+library(ggplot2)
+#Seleccionem els metabòlits
+top_metabolits <- c("Valine", "N.N-Dimethylglycine", "Leucine", "Quinolinate")
+#Extraïm la matriu només amb els metabòlits seleccionats
+top_data <- assay(se)[top_metabolits, ]
+#Preparem les dades per ggplot2 (passem les mostres a les files en comptes de les columnes i anyadim la columna group "Muscle.loss")
+top_data_prep <- as.data.frame(t(top_data))
+top_data_prep$group <- colData(se)$Muscle.loss #Anyadim la columna group
+#Format compatible amb boxplot
+data_met <- reshape2::melt(top_data_prep, id.vars = "group",
+                           variable.name = "metabòlit",
+                           value.name = "concentració")
+#Amb les dades preparades, procedim a fer el boxplot múltiple
+ggplot(data_met, aes(x = metabòlit, y = concentració, fill = group)) + 
+  geom_boxplot(outlier.size = 1) +
+  labs(title = "Boxplot múltiple dels metabòlits més rellevants",
+       x = "Metabòlit",
+       y = "Concentració") + 
+  scale_fill_manual(values = c("cachexic" = "red", "control" = "green")) + #Separem grups amb colors (Muscle.loss)
+  theme_minimal()
+```
+Aquest gràfic mostra les diferències de concentracions dels 4 metabòlits que presenten més diferències significatives segons la variables categórica *Muscle.loss*. Tal i com s'observa en el gràfic, els 4 metabòlits tenen majors concentracions en els individus que presenten la malaltia *cachexia* que en els individus del grup control. 
+
+
+
+**Pas 1: Anàlisi de Components Principals (PCA)**
+
+Mitjançant aquest tipus d'anàlisis, l'objectiu serà reduïr la dimensió de les dades i visualitzar si les mostres s'agrupen segons "Muscle.Loss" (*cachexia/control*) basant-se en els seus perfils metabolòmics:
+
+
+***Matriuc covariança FACER****
+
+
+
+
+
+```{r}
+#Trasposem la matriu per tenir les mostres com a files i els metabòlits com a columnes
+t_data <- t(assay(se))
+cach_control <- colData(se)$Muscle.loss
+#És recomanable centrar i escalar les variables quan estàn en diferents escales, en el nostre cas alguns metabòlits tenen concentracions molt diferents, així que escalarem:
+pca_resultats <- prcomp(t_data, scale. = TRUE)
+summary(pca_resultats)
+```
+Observem en els resultats de l'anàlisis de components principals que els dos primers ja tenen una variabilitat del **48.61%**, que ja es considera bastant alta per ser dades òmiques. Seguidament 
+
+```{r}
+var_explicada <- summary(pca_resultats)$importance[2, ] * 100 #Seleccionem PC1 i PC2 
+barplot(var_explicada,
+        main = "Variànça explicada per component",
+        xlab = "Components principals",
+        ylab = "% Variànça explicada", 
+)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
