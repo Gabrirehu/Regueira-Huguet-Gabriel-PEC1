@@ -245,7 +245,7 @@ grups <- colData(se)$Muscle.loss #grups per etiquetal segons Muscle.loss
 #Gràfic del dendograma 
 library(dendextend)
 dend <- as.dendrogram(hc)
-labels_colors(dend) <- ifelse(grups == "cachexic", "red", "blue")
+labels_colors(dend) <- ifelse(grups == "cachexic", "limegreen", "orange") #Dividim les mostres segons el grup visualment separat per colors 
 plot(dend, 
      main = "Clustering jeràrquic amb grups",
      cex = 0.6)
@@ -271,7 +271,41 @@ mat <- metab[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pac
 mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar després
 ```
 
+El heatmap mostratà les mostres (pacients) i els metabòlits, però no sap quin grup pertany cada mostra. Per tant, hem de fer que el mapa pugui caracteritzar les mostres segons el grup que pertany, li hem de donar la informació.
+```{r}
+anotacions <- data.frame(Grup = grups) #Creem un petit dataframe amb la columna grup (cachexia/control) i una fila per cada mostra 
+rownames(anotacions) <- colnames(mat_scaled) #Així el heatmap sabrà que x columna és la mostra PIF_xxx i que pertany al grup "cachexic", per exemple
+head(anotacions)
+```
 
+```{r}
+library(pheatmap)
+pheatmap(mat_scaled, #Matriu de dades de 10 meatbòlits per 77 mostres (pacients) 
+         annotation_col = anotacions, #Afegeix una linea de colors a dalt del mapa indicant si la mostra és cachexic o control
+         annotation_colors = list(
+           Grup = c(cachexic = "limegreen", control  ="orange") #Definim el color per cada grup
+         ),
+         scale = "none", #None, ja hem escalat els valors manualment
+         clustering_distance_rows = "euclidean", #Mètode per agrupar metabòlits
+         clustering_distance_cols = "euclidean", #Mètode per agrupar mostres 
+         clustering_method = "complete", #clustering jeràrquic
+         main = "Heatmap dels 10 metabòlits més significatius",
+         fontsize_row = 7, #Tamany text dels metabòlits significatius 
+         fontsize_col = 4) #Tamany text de les mostres
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
 
 
 
