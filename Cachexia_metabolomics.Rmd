@@ -2,19 +2,15 @@
 title: "PROBA"
 author: "Gabriel Regueira Huguet"
 date: "2025-03-22"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 Se ha descubierto que el dataset de cachexia ya esta en un paquete llamado specmine.dataset:
 ```{r}
 library(specmine.datasets)
 data("cachexia")
-View(cachexia)
-View(cachexia$data)
-View(cachexia$type)
-View(cachexia$description)
-View(cachexia$metadata)
-View(cachexia$labels)
 ```
 
 ```{r}
@@ -185,7 +181,7 @@ Mitjançant aquest tipus d'anàlisis, l'objectiu serà reduïr la dimensió de l
 t_data <- t(assay(se))
 cach_control <- colData(se)$Muscle.loss
 #És recomanable centrar i escalar les variables quan estàn en diferents escales, en el nostre cas alguns metabòlits tenen concentracions molt diferents, així que escalarem:
-pca_resultats <- prcomp(t_data, scale. = TRUE)
+pca_resultats <- prcomp(t_data, scale. = TRUE) #Calcula internament la matriu de covariàncies i centra les dades (Scale)  
 summary(pca_resultats)
 ```
 Observem en els resultats de l'anàlisis de components principals que els dos primers ja tenen una variabilitat del **48.61%**, que ja es considera bastant alta per ser dades òmiques. Seguidament 
@@ -200,6 +196,80 @@ barplot(var_explicada,
 
 ```
 
+Ara ut8ilitzarem els valors dels primers components principals per a obtenir una representació de les dades en una dimensió reduïda. 
+
+```{r}
+pca_d <- as.data.frame(pca_resultats$x) #Cada fila representa una mostra i cada columna un PCA
+pca_d$group <- cach_control #Afegim la classe de cada mostra
+library(ggplot2)
+ggplot(pca_d, aes(x = PC1, y = PC2, color = group)) + #Separem per grup segons el color
+  geom_point(size = 3) +
+  labs(
+    title = "Anàlisis de components principals (PCA)",
+    x = paste0("PC1(", round(var_explicada[1], 1), "%)"),
+    y = paste0("PC2 (", round(var_explicada[2], 1), "%)")
+    
+  ) + theme_minimal()
+```
+S'ha realitzar un anàlisi de components principals sobre la matriu de concentracions de metabòlits. Prèviament s'han centrat i escalat les dades per a evitar que les diferències d'escala entre les variables afectin l'anàlisi. Els dos primers components principals, com es pot observar, expliquen gairebé un 50% de la variànça total (48.6%). 
+
+
+La magnitud de la contribució de cada variable a  les PC són els seus "loadings" en cada PC. Els autovectors (eigenvectors) associats a la matriu de covariànça són els loadings, indiquen quina direcció prenen els nous components i quines variables (metabòlits) contribueixen més. 
+```{r}
+#Creem un data frame ambv els loadings
+loadings_pca <- as.data.frame(pca_resultats$rotation) 
+loadings_pca$metabolit <- rownames(loadings_pca)
+```
+
+```{r}
+top_PC1 <- loadings_pca[order(abs(loadings_pca$PC1), decreasing = TRUE), ][1:10, ]
+
+ggplot(top_PC1, aes(x =reorder(metabolit, PC1), y = PC1)) + 
+  geom_col(fill = "steelblue") + 
+  coord_flip() + 
+  labs(title = "Principals metabolits que contribueixen a PC1", 
+       x = "Metabòlit",
+       y = "Pes (loading) en PC1") + 
+  theme_minimal()
+```
+
+**CLUSTERING JERÀRQUIC**
+
+El clustering jeràquic és un potent recurs per a l'anàlisis exploratori de dades, porporcionant mètodes potents i flexibles per descubrir grups en les dades. 
+
+```{r}
+dades_s <- scale(t_data) #Matriu amb mostres com a files i metabòlits com a columnes (t) i escalada
+dist_mostres <- dist(dades_s, method = "euclidean") #Calculqem la matriu de distàncies (eucledian)
+hc <- hclust(dist_mostres, method = "complete") #Mètode de distància escollit: "Complete link", màxim de desimilituds per parells
+grups <- colData(se)$Muscle.loss #grups per etiquetal segons Muscle.loss
+#Gràfic del dendograma 
+library(dendextend)
+dend <- as.dendrogram(hc)
+labels_colors(dend) <- ifelse(grups == "cachexic", "red", "blue")
+plot(dend, 
+     main = "Clustering jeràrquic amb grups",
+     cex = 0.6)
+```
+
+Observem en el dendrograma que hi ha una separació visible entre els dos grups principals (*cachexia* i *control*), tot i que no està perfectament separada perquè algunes mostres *cachexia* (vermell) queden barrejades amb *control* (blau). Això pot indicar que pot haver efectes tècnics que desconeixem i/o que només alguns metabòlits separen clarament els dos grups (no tots). 
+
+
+**Heatmap**
+
+Un heatmapa amb 63 variables (meatbòlits) seria massa sorollós i difícil d'interpretar. Per tant, abans de fer el heatmap farem una selecció prèvia dels metabòlits (variables) més significatius.
+
+```{r}
+#Com ho hem fet anteriorment, ja tenim els p-valors ordenats dels metabòlits
+p_valors_ordenats <- sort(p_valors)
+top_metabolits_heatmap <- names(p_valors_ordenats)[1:10] #Seleccionem els 10 metabòlits més significatius
+top_metabolits_heatmap
+```
+```{r}
+#extraim les dades només per als meta`+bolits més significatius
+mat <- metab[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pacients)
+#Escalem pels metabòlits (mitjana 0, desviació 1)
+mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar després
+```
 
 
 
@@ -214,13 +284,11 @@ barplot(var_explicada,
 
 
 
+**Referències**
 
+https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/117-hcpc-hierarchical-clustering-on-principal-components-essentials/
 
-
-
-
-
-
+https://www.datanovia.com/en/blog/cluster-analysis-in-r-practical-guide/
 
 
 
