@@ -7,7 +7,12 @@ output:
   html_document: default
 ---
 
-Se ha descubierto que el dataset de cachexia ya esta en un paquete llamado specmine.dataset:
+**1- SELECCIONEM UN DATASET DE METABOLÒMICA:**
+
+La *cachexia* és un síndrome metabòlic complex, que es mostra habitual en pacients amb càncer. Aquest síndrome es caracteritza per una pèrdua de massa musculari/o greixosa, inflamació sistèmica, alteracions hormonals i en el metabolisme enegètic. Aquesta pèrdua de massa muscular es tradueix a un catabolisme muscular accelerat, que proboca l'alliberament de aminoàcids com la valina, leucina, alanina, etc. Aquest síndrome proboca que el pacient es trobi en un estat de semi-fam metabòlica, que proboca que hi hagi una demanda energètica elevada i alguns metabòlits intermedis del metabolisme energètic s'acumulen (3-hydrpxybutyrate, pyroglutamate, glutamine). 
+
+
+S'ha descobert que el dataset de *cachexia* ja es troba en un paquet d'R  anomenat *specmine.dataset*:
 ```{r}
 library(specmine.datasets)
 data("cachexia")
@@ -15,6 +20,7 @@ data("cachexia")
 
 ```{r}
 class(cachexia)
+View(cachexia)
 ```
 
 Com podem observar, cachexia és una llista personalitzada utilitzada per el paquet specmine.datasets. Al executar View(cachecia) no surt una taula de dades convencional, sinó una vista estructurada dels components del dataset *cachexia*.
@@ -23,9 +29,11 @@ Observem en el dataset de *cachexia* que aquest té diferents elements:
 
 - data: matriu 63 x 77 (metabolites x mostres)
 
-- metadata: data.frame amb informació sobre cada mostra (grup) 
+- metadata: data.frame (77 x 1) amb informació sobre cada mostra (grup), indica a quin grup pertany cada mostra (*Muscle.loss*)
 
 - description: petita descripció sobre les dades
+
+**2- CREAR UN OBJECTE SUMMARIZEDEXPERIMENT:**
 
 Ara procedim a crear el *SummarizedExperiment*:
 
@@ -53,19 +61,27 @@ View(colData(se))
 colData(se)
 ```
 ```{r}
-colnames(colData(se))
+colnames(colData(se)) #Grup cachexia/control
 ```
-```{r}
-se
-```
+
 Una vegada creat el *SummarizedExperiment*, el guardarem en un arxiu en format .Rda com indica l'enunciat:
 
 ```{r}
 save(se, file = "se_cachexia.rda")
 ```
 
+**Diferències *ExpressionSet* i *SummarizedExperiment* **: 
 
-**ANÀLISIS EXPLORATORI**
+*ExpressionSet* ha estat durant molt temps el format clàssic per analitzar dades de miacroarrays, només admet una única matriu de dades (*exprs*). És molt útil, però està pensat per un tipus específic de dades i no té tanta flexibilitat. En canvi l'objecte *SummarizedExperiment* és més potent, ja que és capaç de gestionar més tipus de dades (comptes, intensitats, etc) i pot contenir múltiples matrius (en *assays*) i és compatible amb dades més complexes, és l'OOP estàndard actual per a estudis RNa-seq, proteòmica i metabolòmica. Tots dos objectes són molt útils per organitzar les dades de manera integrada i sincronitzada, però *SummarizedExperiment* ho fa amb més flexibilitat i amb una estructura més moderna. 
+
+
+
+
+
+
+
+
+**3- ANÀLISIS EXPLORATORI:**
 
 ```{r}
 load("se_cachexia.rda")
@@ -77,16 +93,10 @@ apply(assay(se), 1, summary)
 ```{r}
 dim(se) #Nombre de files i columnes 
 ```
-Ena quest cas, es pot deduïr que les variables són 63 concentracions de metabòlits analitzats en la orina de 77 individus. Totes les variables, doncs, són numèriques. 
+Ena quest cas, es pot deduïr que les variables són 63 concentracions de metabòlits analitzats en la orina de 77 individus. Totes les variables, doncs, són numèriques menys la variables grup de *Muscle.loss*. 
 
 ```{r}
 anyNA(assay(se)) #No hi ha valors faltants (NA) en la matriu de dades 
-```
-
-
-
-```{r}
-colnames(colData(se))
 ```
 ```{r}
 colData(se)
@@ -99,30 +109,21 @@ Podem observar de forma general que aquestes dades consten d'un OOP *summarizedE
 ```{r}
 Creatina <- assay(se)["Creatine", ] #Extraim le concentracions del metabòlit "creatine"
 muscle_loss <- colData(se)$Muscle.loss #ExtraIm el grup Muscle.loss
-#Creem un histograma 
-hist(Creatina,
-     main = "Creatina segons",
-     xlab = "Concentració",
-     col = "lightblue")
-```
-```{r}
 boxplot(Creatina ~ muscle_loss,
         main = "Creatina segons Muscle.loss",
         xlab = "Grup",
         ylab = "Concentració de creatina",
         ylim = c(0, 1000))
 ```
+
 ```{r}
 t.test(Creatina ~ muscle_loss)
 ```
-Mitjançant aquest anàlisi bàsic podem observar que el metabòlit creatina mostra una diferència significativa en la concentració entre els grups Muscle.loss. Observem que la mitjana en el grup que tenen *cachexia* (pèrdua constant de massa muscular) és significativament superior (174.91) a la del grup control (51.50) amb un interval de confiança de [20.32 - 226.50]. Aquests resultats poden indicar que la concentració de creatina en la orina podria estar relacionada amb l'estat de cachexia i, per tant, podria ser un potencial marcador per ajudar a diagnosticar aquesta malaltia. 
+Mitjançant aquest anàlisi bàsic podem observar que el metabòlit creatina mostra una diferència significativa en la concentració entre els grups Muscle.loss. Observem que la mitjana en el grup que tenen *cachexia* (pèrdua constant de massa muscular) és significativament superior (174.91) a la del grup control (51.50) amb un interval de confiança de [20.32 - 226.50]. Aquests resultats poden indicar que la concentració de creatina en la orina podria estar relacionada amb l'estat de cachexia i, per tant, podria ser un potencial marcador per ajudar a diagnosticar aquesta malaltia. Això té certa coherència amb la fisiopatologia del síndrome, ja la *cachexia* comporta un elevat catabolisme proteic i muscular que es pot traduïr a un augment de les concentracions extracel·lulars de creatina i, per tant, un augment en la concentració de creatina en la orina dels pacients amb *cachexia*. 
 
 
-```{r}
-rownames(se)
-```
 
-Seguidament, sseguirem amb l'anàlisis estadístic descriptiu mitjançant un boxplot múltiple. Com que no podem fer un boxplot dels 63 metabòlits, farem un t-test univariant per a cada metabòlit i seleccionarem els 6 metabòlits que tinguin p-valors més baixos. 
+Seguidament, seguirem amb l'anàlisis estadístic descriptiu mitjançant un boxplot múltiple. Com que no podem fer un boxplot dels 63 metabòlits, farem un t-test univariant per a cada metabòlit i seleccionarem els 4 metabòlits que tinguin p-valors més baixos (més significació). 
 
 ```{r}
 metab <- assay(se)
@@ -293,23 +294,15 @@ pheatmap(mat_scaled, #Matriu de dades de 10 meatbòlits per 77 mostres (pacients
          fontsize_row = 7, #Tamany text dels metabòlits significatius 
          fontsize_col = 4) #Tamany text de les mostres
 ```
+Com que hem escalat la matriu de dades dels metabòlits, per cada fila de metabòlit la mitjana és 0 i la desviació estàndard és 1. D'aquesta manera la majoria de valors d'un metabòlit queden aprop del 0, però si hi ha algun valor molt alt comparat amb la mitjana, aquesta destacarà sobre la resta i mostrarà una coloració més llunyana del blau/blanc i s'aproparà al vermell. D'aquesta manera, amb el heatmap podem veure quins valors de metabòlits destaquen sobre la resta. 
 
+El dendrograma de dalt mostra com les mostres (pacients) s'agrupen segons la semblança dels seus perfils metabolòmics, d'aquesta manera veiem que les mostres de color verd que pertany al grup que té *cachexia* tendeixen a agrupar-se a la dreta, on es mostren valors dels metabòlits més elevats que les seves mitjanes. Mentre que les mostres de taronja que pertanyen als pacients control, tendeixen a agrupar-se a l'esquerra, amb perfils metabolòmics més propers a la mitjana (color blau). 
 
+Com ja havíem vist en els anàlisis anteriors, aquest patró reforça la idea que els pacients amb *cachexia* semblen presentar perfils metabolòmics diferenciats, amb concentracions més elevades en diversos metabòlits rellevants. 
 
+Els resultats observats al heatmap i la resta d'anàlisis són consistents amb la literatura científica sobre el síndroma *cachexia*. Ja que *cachexia* és un síndrome caracteritzat per una gran desregulació metabòlica, un augment de la degradació de proteïnes musculars i una activació de la gluconeogènesi i alteració de les vies energètiques (Evans et al., 2009; Argilés et al., 2014). Aquests processos catabòlics provoquen l'alliberament d'aminoàcids al torrent sanguini (valina, glutamina, leucina, alanina, etc) que podem veure reflectits en els pacients amb *cachexia* en el heatmap (majors concentracions, colors allunyats del blau). De la mateixa manera s'observa major presència d'intermedis com 3-hydroxybutyrate, pdoructe de l'oxidació de lípids en contextos de dèficit energètic. A més, observem un augment de quilonate que podria reflectir a l'activació de la via del triptòfan associada a l'estrès inflamatori i oxidatiu, habitual en pacients amb cachexia (Faeron et al., 2011). 
 
-
-
-
-
-
-
-```{r}
-
-```
-
-
-
-
+Per tant, podem concluïr que els patrons observats en els resultats dels anàlisi no només tenen consistència estadística, sinó també una base fisiològica. Aquest conjunt d'evidències suggereix que el perfil metabolòmic pot ser una eina molt útil per a identificar pacients amb *cachexia* i pot oferir un punt de partida per a futurs anàlisis de diagnòstic. 
 
 
 
@@ -324,6 +317,12 @@ https://www.sthda.com/english/articles/31-principal-component-methods-in-r-pract
 
 https://www.datanovia.com/en/blog/cluster-analysis-in-r-practical-guide/
 
+Evans WJ, Morley JE, Argilés J, Bales C, Baracos V, Guttridge D, Jatoi A, Kalantar-Zadeh K, Lochs H, Mantovani G, Marks D, Mitch WE, Muscaritoli M, Najand A, Ponikowski P, Rossi Fanelli F, Schambelan M, Schols A, Schuster M, Thomas D, Wolfe R, Anker SD. Cachexia: a new definition. Clin Nutr. 2008 Dec;27(6):793-9. doi: 10.1016/j.clnu.2008.06.013. Epub 2008 Aug 21. PMID: 18718696.
+
+Fearon K, Strasser F, Anker SD, Bosaeus I, Bruera E, Fainsinger RL, Jatoi A, Loprinzi C, MacDonald N, Mantovani G, Davis M, Muscaritoli M, Ottery F, Radbruch L, Ravasco P, Walsh D, Wilcock A, Kaasa S, Baracos VE. Definition and classification of cancer cachexia: an international consensus. Lancet Oncol. 2011 May;12(5):489-95. doi: 10.1016/S1470-2045(10)70218-7. Epub 2011 Feb 4. PMID: 21296615.
+
+
+Argilés JM, Busquets S, Stemmler B, López-Soriano FJ. Cancer cachexia: understanding the molecular basis. Nat Rev Cancer. 2014 Nov;14(11):754-62. doi: 10.1038/nrc3829. Epub 2014 Oct 9. PMID: 25291291.
 
 
 
