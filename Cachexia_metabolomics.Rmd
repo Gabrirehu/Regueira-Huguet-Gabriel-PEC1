@@ -20,7 +20,13 @@ data("cachexia")
 
 ```{r}
 class(cachexia)
+```
+
+```{r}
 View(cachexia)
+View(cachexia$data)
+View(cachexia$metadata)
+class(cachexia$metadata)
 ```
 
 Com podem observar, cachexia és una llista personalitzada utilitzada per el paquet specmine.datasets. Al executar View(cachecia) no surt una taula de dades convencional, sinó una vista estructurada dels components del dataset *cachexia*.
@@ -257,7 +263,7 @@ Observem en el dendrograma que hi ha una separació visible entre els dos grups 
 
 **Heatmap**
 
-Un heatmapa amb 63 variables (meatbòlits) seria massa sorollós i difícil d'interpretar. Per tant, abans de fer el heatmap farem una selecció prèvia dels metabòlits (variables) més significatius.
+Un heatmapa amb 63 variables (meatbòlits) seria massa sorollós i difícil d'interpretar. Per tant, abans de fer el heatmap farem una selecció prèvia dels 10 metabòlits (variables) més significatius.
 
 ```{r}
 #Com ho hem fet anteriorment, ja tenim els p-valors ordenats dels metabòlits

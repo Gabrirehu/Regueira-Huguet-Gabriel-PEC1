@@ -1,0 +1,345 @@
+---
+title: "PEC1_cachexia_github"
+author: "Gabriel Regueira Huguet"
+date: "2025-03-27"
+output: pdf_document
+---
+
+**1- SELECCIONEM UN DATASET DE METABOLÒMICA:**
+
+La *cachexia* és un síndrome metabòlic complex, que es mostra habitual en pacients amb càncer. Aquest síndrome es caracteritza per una pèrdua de massa musculari/o greixosa, inflamació sistèmica, alteracions hormonals i en el metabolisme enegètic. Aquesta pèrdua de massa muscular es tradueix a un catabolisme muscular accelerat, que proboca l'alliberament de aminoàcids com la valina, leucina, alanina, etc. Aquest síndrome proboca que el pacient es trobi en un estat de semi-fam metabòlica, que proboca que hi hagi una demanda energètica elevada i alguns metabòlits intermedis del metabolisme energètic s'acumulen (3-hydrpxybutyrate, pyroglutamate, glutamine). 
+
+```{r}
+#Importem directament les dades crues (raw) desde el repositori de github que proporciona l'enunciat:
+url_github <- "https://raw.githubusercontent.com/nutrimetabolomics/metaboData/refs/heads/main/Datasets/2024-Cachexia/human_cachexia.csv" #Url de les dades crues (Raw)
+human_cachexia_data <- read.csv(url_github, header = TRUE, sep = ",") #Separació per comes tai i com estàn organitzades les dades crues
+```
+
+```{r}
+View(human_cachexia_data)
+head(human_cachexia_data)
+```
+Observem un dataset on les files són les mostres (pacients) i les columnes són els metabòlits analitzats. També podem observar que hi ha una variable que separa els pacients en dos grups, pacients amb *cachexia* i pacients control. 
+
+
+**2- CREAR UN OBJECTE *SUMMARIZEDEXPERIMENT* **
+
+Per a crear un objecte *SummarizedExperiment* necessito una matriu de dades quantitatives (amb les concentracions de metabòlits per pacient) i un *colData* amb informació de les mostres, que en aquest cas és el tipus de grup que pertany cada pacient (*cachexia/control*). 
+
+```{r}
+#Matriu de dades numèriques
+assay_data1_ <- human_cachexia_data[, -(1:2)] #Eliminem les dues primeres columnes 
+rownames(assay_data1_) <- human_cachexia_data$Patient.ID #Assignem com a nom de fila els identificadors Patient.ID en el dataset
+assay_data1 <- as.matrix(assay_data1_)
+View(assay_data1) #Observem que tenim el nom de les files assignats als identificadors dels pacients (Patient.ID) i les colmunes son els metabòlits
+```
+
+
+```{r}
+#colData: Informació sobre les mostres (pacients): Muscle.loss
+col_data1 <- data.frame(
+  Patient.ID = human_cachexia_data$Patient.ID, #Agafem els pacients,
+  Muscle.loss = human_cachexia_data$Muscle.loss #I el grup al que pertanyen
+)
+rownames(col_data1) <- human_cachexia_data$Patient.ID #Assignem coma nom de fila els indentificadors com hem fet amb assay_data
+View(col_data1) 
+```
+
+Abans de fer el *SummarizedExperiment*, necessitem tenir una matriu numèrica on les mostres estiguin com a columnes en comptes de com a files, de la mateixa manera els metabòlits com a files en comptes de com a columnes:
+
+```{r}
+#Trasposem la matriu per tenir metabolits (files) x pacients (columnes)
+assay_data1t <- t(assay_data1)
+View(assay_data1t)
+colnames(assay_data1t) #Automàticament ja cambia rownames per colnames quan trasposem la matriu
+```
+Ara ja tenim la matriu de dades numèriques llesta per a fer *SummarizedExperiment*
+
+
+```{r}
+library(SummarizedExperiment)
+cachexia_se <- SummarizedExperiment(
+  assays = list(counts = assay_data1t), #Matriu de dades 
+  colData = col_data1 #Grup per pacient
+)
+cachexia_se
+```
+Una vegada creat el *SummarizedExperiment*, el guardarem en un arxiu en format .Rda com indica l'enunciat:
+```{r}
+save(cachexia_se, file = "cachexia_se.rda") #Guardem l'arxiu al repositori
+```
+
+**Diferències *ExpressionSet* i *SummarizedExperiment* **: 
+
+*ExpressionSet* ha estat durant molt temps el format clàssic per analitzar dades de miacroarrays, només admet una única matriu de dades (*exprs*). És molt útil, però està pensat per un tipus específic de dades i no té tanta flexibilitat. En canvi l'objecte *SummarizedExperiment* és més potent, ja que és capaç de gestionar més tipus de dades (comptes, intensitats, etc) i pot contenir múltiples matrius (en *assays*) i és compatible amb dades més complexes, és l'OOP estàndard actual per a estudis RNa-seq, proteòmica i metabolòmica. Tots dos objectes són molt útils per organitzar les dades de manera integrada i sincronitzada, però *SummarizedExperiment* ho fa amb més flexibilitat i amb una estructura més moderna. 
+
+
+**3- ANÀLISIS EXPLORATORI:**
+
+```{r}
+#S'ha fet un resum estadístic per a cada metabòlit (mínim, mitjana, màxim, etc), posem els 5 primer com a exemple:
+apply(assay(cachexia_se)[1:5, ], 1, summary) #Resum numèric dels metabòlits (5 primers)
+```
+```{r}
+dim(cachexia_se)
+```
+En aquest cas, es pot deduïr que les variables són 63 concentracions de metabòlits analitzats en la orina de 77 individus. Totes les variables, doncs, són numèriques menys la variables grup de *Muscle.loss*, que es la que determina quin pacient té *cachexia* i quin pertany al grup *control*.
+
+```{r}
+#Comprovem que no hi hagi valors faltants (NA) en la matriu de dades
+anyNA(assay(cachexia_se))
+```
+Podem observar de forma general que aquestes dades consten d'un OOP *summarizedExperiment* on la matriu de dades està format per 77 pacients (columnes) els quals estàn dividits pel grup "Muscle.Loss" i 63 metabòlits (files) que són les concentracions de diferents metabòlits analitzades en les mostres d'orina dels pacients. 
+
+**Creatina**
+
+```{r}
+creatina <- assay(cachexia_se)["Creatine", ] #Extraiem les concentracions del metabòlit creatina
+muscle_loss <- colData(cachexia_se)$Muscle.loss #Extraiem el grup Muscle.loss
+boxplot(creatina ~ muscle_loss, 
+        main = "Creatina segons Muscle.loss",
+        xlab = "Grup2",
+        ylab = "concentració de creatina",
+        ylim = c(0, 1000))
+```
+```{r}
+t.test(creatina ~ muscle_loss)
+```
+Mitjançant aquest anàlisi bàsic podem observar que el metabòlit creatina mostra una diferència significativa en la concentració entre els grups Muscle.loss. Observem que la mitjana en el grup que tenen *cachexia* (pèrdua constant de massa muscular) és significativament superior (174.91) a la del grup control (51.50) amb un interval de confiança de [20.32 - 226.50]. Aquests resultats poden indicar que la concentració de creatina en la orina podria estar relacionada amb l'estat de cachexia i, per tant, podria ser un potencial marcador per ajudar a diagnosticar aquesta malaltia. Això té certa coherència amb la fisiopatologia del síndrome, ja que la *cachexia* comporta un elevat catabolisme proteic i muscular que es pot traduïr a un augment de les concentracions extracel·lulars de creatina i, per tant, un augment en la concentració de creatina en la orina dels pacients amb *cachexia*. 
+
+**Boxplot metabòlits més rellevants**
+
+Seguidament, seguirem amb l'anàlisis estadístic descriptiu mitjançant un boxplot múltiple. Com que no podem fer un boxplot dels 63 metabòlits, farem un t-test univariant per a cada metabòlit i seleccionarem els 4 metabòlits que tinguin p-valors més baixos (més significació).
+
+```{r}
+metabolits <- assay(cachexia_se) #Assignem metabolits 
+group <- colData(cachexia_se)$Muscle.loss #Assignem group a la variables Muscle.loss 
+#Fem un t-test per cada metabòlit i guardem els p-valors dels t-tests
+p_valors <- apply(metabolits, 1, function(x) {
+  tryCatch(t.test(x ~ group)$p.value, error = function(e) NA) #Agafem els p_valors dels t-tests de cada metabòlits
+})
+#Ordenem els metabòlits segons els p-valors que hagin donat els t-tests
+p_valors_ordenats <- sort(p_valors)
+top_metabolits <- names(p_valors_ordenats) [1:4]
+top_metabolits
+```
+Aquests són els metabòlits que han donat més nivell de significació fent el t-test segons la variable grup *Muscle.loss*. Per tant, haurien de ser els que tenen diferències més significatives de concentracions segons si els pacients tenen *cachexia* o no.
+
+```{r}
+library(reshape2)
+library(ggplot2)
+#Seleccionem els metabòlits que ens han sortit
+top_metabolits <- c("Valine", "N.N.Dimethylglycine", "Leucine", "Quinolinate")
+#Extraiem la matriu només amb els metabòlits seleccionats
+top_data <- assay(cachexia_se)[top_metabolits, ]
+#Preparem les dades per fer ggplot2 (passem les mostres a les files en comptes de les columnes i anyadim la columna grup Muscle.loss)
+top_data_prep <- as.data.frame(t(top_data))
+top_data_prep$group <- colData(cachexia_se)$Muscle.loss #Anyadim la columna grup 
+#Format compatible amb bloxplot
+data_metabolits <- reshape2::melt(top_data_prep, id.vars = "group",
+                                  variable.name = "metabòlit",
+                                  value.name = "concentració")
+#Amb les dades preparades, procedim a fer el boxploit múltiple
+ggplot(data_metabolits, aes( x= metabòlit, y = concentració, fill = group)) + 
+  geom_boxplot(outlier.size = 1) +
+  labs(title = "Boxplot múltiple dels metabòlits més rellevants",
+       x = "Metabòlit",
+       y = "Concentració") + 
+  scale_fill_manual(values = c("cachexic" = "red", control = "green")) + #Separem grups per color
+  theme_minimal()
+```
+Aquest gràfic mostra les diferències de concentracions dels 4 metabòlits que presenten més diferències significatives segons la variables categórica *Muscle.loss*. Tal i com s'observa en el gràfic, els 4 metabòlits tenen majors concentracions en els individus que presenten la malaltia *cachexia* que en els individus del grup control. 
+
+
+
+**Pas 1: Anàlisi de Components Principals (PCA)**
+
+Mitjançant aquest tipus d'anàlisis, l'objectiu serà reduïr la dimensió de les dades i visualitzar si les mostres s'agrupen segons "Muscle.Loss" (*cachexia/control*) basant-se en els seus perfils metabolòmics:
+
+```{r}
+#Primerament, trasposem la matriu de l'objecte per tenir les mostres com a files i els metabòlits com a columnes
+t_data <- t(assay(cachexia_se))
+#És recomanable escalar les variables quan estàn a diferents escales , en el nostre cas algun metabòlit té concentracions molt més elevades que d'altres, per tant escalem:
+pca_resultats <- prcomp(t_data, scale. = TRUE)
+summary(pca_resultats)$importance[, 1:5] #Mostrem els 5 components principals més importants (dels 63PC que surten)
+```
+Observem en els resultats de l'anàlisis de components principals que els dos primers ja tenen una variabilitat del **48.61%**, que ja es considera bastant alta per ser dades òmiques. 
+
+```{r}
+var_explicada <- summary(pca_resultats)$importance[2, ] * 100 #Seleccionem PC1 i PC2
+barplot(var_explicada,
+        main = "Variànça explicada per component",
+        xlab = "Components principals",
+        ylab = "% Variànça explicada",
+)
+
+```
+Observem que a partir de el PC2 ja la resta explica cada cop menys la variànça de les dades. Per tant, decidim quedar-nos amb els dos primers components principals i utilitzarem aquests per a obtenir una representació de les dades en una dimensió reduïda:
+
+```{r}
+cach_control <- colData(cachexia_se)$Muscle.loss
+pca_d <- as.data.frame(pca_resultats$x) #Cada fila representa una mostra i cada columna un PCA
+pca_d$group <- cach_control #Afegim la classe de cada mostra
+library(ggplot2)
+ggplot(pca_d, aes(x = PC1, y = PC2, color = group)) + #Separem per grup segons el color
+geom_point(size = 3) +
+labs(
+title = "Anàlisis de components principals (PCA)",
+x = paste0("PC1(", round(var_explicada[1], 1), "%)"),
+y = paste0("PC2 (", round(var_explicada[2], 1), "%)")
+) + theme_minimal()
+```
+S’ha realitzar un anàlisi de components principals sobre la matriu de concentracions de metabòlits.
+Prèviament s’han centrat i escalat les dades per a evitar que les diferències d’escala entre les variables
+afectin l’anàlisi. Els dos primers components principals, com es pot observar, expliquen gairebé un 50% de
+la variànça total (48.6%).
+La magnitud de la contribució de cada variable a les PC són els seus “loadings” en cada PC. Els autovectors
+(eigenvectors) associats a la matriu de covariànça són els loadings, indiquen quina direcció prenen els nous
+components i quines variables (metabòlits) contribueixen més.
+```{r}
+#creem un data frame amb els "loadings" (magnitud de contribució de cada metabòlit al component principal)
+pca_resultats <- prcomp(t_data, scale. = TRUE)
+loadings_pca <- as.data.frame(pca_resultats$rotation) #assignem els loadings
+loadings_pca$metabolit <- rownames(loadings_pca)
+```
+
+
+```{r}
+top_PC1 <- loadings_pca[order(abs(loadings_pca$PC1), decreasing =TRUE), ][1:10, ] #Agafem els 10 metabòlits més importants del PC1 i els ordenem en sentit decreixent
+#Grafic
+ggplot(top_PC1, aes(x = reorder(metabolit, PC1), y = PC1)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() + #Cambiem els eixos per a millor visualització
+  labs(title = "Principals metabòlits que contribueixen a PC1",
+       x = "Metabòlit",
+       y = "Magnitud de contribució a PC1 (loadings)") +
+  theme_minimal()
+```
+Aquest gràfic mostra els 10 metabòlits que més contribueixen a la variànça capturada pel primer component principal (PC1). Com hem pogut observar prèviament, el PC1 és el component principal del qual la seva direcció recull la major part de la variabilitat de les dades, i els valors *loading* indicarien quina força té cada metabòlit en definir aquesta direcció. Podem oobservar com la majoria de metabòlits contribueixen de forma gairebé equitativa a la PC1, destaquem la *Creatine*, que és la que contribueix més. Això té coherència amb l'anàlisi anterior, on ja havíem vist que aquest metabòlit mostrava diferències significatives segons el grup (*cachexia/control*). 
+
+**CLUSTERING JERÀRQUIC**
+
+El clustering jeràquic és un potent recurs per a l'anàlisis exploratori de dades, porporcionant mètodes potents i flexibles per descubrir grups en les dades.
+
+```{r, fig.width = 14, fig.height = 4}
+dades_s <- scale(t_data) #Matriu amb mostres com a files i metabòlits com a columnes (t) i escalada
+dist_mostres <- dist(dades_s, method = "euclidean") #Calculqem la matriu de distàncies (eucledian)
+hc <- hclust(dist_mostres, method = "complete") #Mètode de distància escollit: "Complete link", màxim de desimilituds per parells
+grups <- colData(cachexia_se)$Muscle.loss #grups per etiquetal segons Muscle.loss
+#Gràfic del dendograma 
+library(dendextend)
+dend <- as.dendrogram(hc)
+labels_colors(dend) <- ifelse(grups == "cachexic", "limegreen", "orange") #Dividim les mostres segons el grup visualment separat per colors 
+plot(dend, 
+     main = "Clustering jeràrquic amb grups",
+     cex = 0.8)
+
+```
+
+Observem en el dendrograma que hi ha una separació visible entre els dos grups principals (*cachexia* i *control*), tot i que no està perfectament separada perquè algunes mostres *cachexia* (vermell) queden barrejades amb *control* (blau). Això pot indicar que pot haver efectes tècnics que desconeixem i/o que només alguns metabòlits separen clarament els dos grups (no tots). 
+
+
+**Heatmap**
+
+Un heatmapa amb 63 variables (meatbòlits) seria massa sorollós i difícil d'interpretar. Per tant, abans de fer el heatmap farem una selecció prèvia dels 10 metabòlits (variables) més significatius.
+
+```{r}
+#Com ho hem fet anteriorment, ja tenim els p-valors ordenats dels metabòlits
+p_valors_ordenats <- sort(p_valors)
+top_metabolits_heatmap <- names(p_valors_ordenats)[1:10] #Seleccionem els 10 metabòlits més significatius
+top_metabolits_heatmap
+```
+```{r}
+#extraim les dades només per als meta`+bolits més significatius
+mat <- metabolits[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pacients)
+#Escalem pels metabòlits (mitjana 0, desviació 1)
+mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar després
+```
+
+
+El heatmap mostratà les mostres (pacients) i els metabòlits, però no sap quin grup pertany cada mostra. Per tant, hem de fer que el mapa pugui caracteritzar les mostres segons el grup que pertany, li hem de donar la informació.
+
+```{r}
+anotacions <- data.frame(Grup = grups) #Creem un petit dataframe amb la columna grup (cachexia/control)
+rownames(anotacions) <- colnames(mat_scaled) #Així el heatmap sabrà que x columna és la mostra PIC_XXX (pacient)
+head(anotacions)
+```
+```{r}
+library(pheatmap)
+pheatmap(mat_scaled, #Matriu de dades de 10 meatbòlits per 77 mostres (pacients) 
+         annotation_col = anotacions, #Afegeix una linea de colors a dalt del mapa indicant si la mostra és cachexic o control
+         annotation_colors = list(
+           Grup = c(cachexic = "limegreen", control  ="orange") #Definim el color per cada grup
+         ),
+         scale = "none", #None, ja hem escalat els valors manualment
+         clustering_distance_rows = "euclidean", #Mètode per agrupar metabòlits
+         clustering_distance_cols = "euclidean", #Mètode per agrupar mostres 
+         clustering_method = "complete", #clustering jeràrquic
+         main = "Heatmap dels 10 metabòlits més significatius",
+         fontsize_row = 7, #Tamany text dels metabòlits significatius 
+         fontsize_col = 4) #Tamany text de les mostres
+```
+
+Com que hem escalat la matriu de dades dels metabòlits, per cada fila de metabòlit la mitjana és 0 i la desviació estàndard és 1. D'aquesta manera la majoria de valors d'un metabòlit queden aprop del 0, però si hi ha algun valor molt alt comparat amb la mitjana, aquesta destacarà sobre la resta i mostrarà una coloració més llunyana del blau/blanc i s'aproparà al vermell. D'aquesta manera, amb el heatmap podem veure quins valors de metabòlits destaquen sobre la resta. 
+
+El dendrograma de dalt mostra com les mostres (pacients) s'agrupen segons la semblança dels seus perfils metabolòmics, d'aquesta manera veiem que les mostres de color verd que pertany al grup que té *cachexia* tendeixen a agrupar-se a la dreta, on es mostren valors dels metabòlits més elevats que les seves mitjanes. Mentre que les mostres de taronja que pertanyen als pacients control, tendeixen a agrupar-se a l'esquerra, amb perfils metabolòmics més propers a la mitjana (color blau). 
+
+Com ja havíem vist en els anàlisis anteriors, aquest patró reforça la idea que els pacients amb *cachexia* semblen presentar perfils metabolòmics diferenciats, amb concentracions més elevades en diversos metabòlits rellevants. 
+
+Els resultats observats al heatmap i la resta d'anàlisis són consistents amb la literatura científica sobre el síndroma *cachexia*. Ja que *cachexia* és un síndrome caracteritzat per una gran desregulació metabòlica, un augment de la degradació de proteïnes musculars i una activació de la gluconeogènesi i alteració de les vies energètiques (Evans et al., 2009; Argilés et al., 2014). Aquests processos catabòlics provoquen l'alliberament d'aminoàcids al torrent sanguini (valina, glutamina, leucina, alanina, etc) que podem veure reflectits en els pacients amb *cachexia* en el heatmap (majors concentracions, colors allunyats del blau). De la mateixa manera s'observa major presència d'intermedis com 3-hydroxybutyrate, pdoructe de l'oxidació de lípids en contextos de dèficit energètic. A més, observem un augment de quilonate que podria reflectir a l'activació de la via del triptòfan associada a l'estrès inflamatori i oxidatiu, habitual en pacients amb cachexia (Faeron et al., 2011). 
+
+Per tant, podem concluïr que els patrons observats en els resultats dels anàlisi no només tenen consistència estadística, sinó també una base fisiològica. Aquest conjunt d'evidències suggereix que el perfil metabolòmic pot ser una eina molt útil per a identificar pacients amb *cachexia* i pot oferir un punt de partida per a futurs anàlisis de diagnòstic. 
+
+
+
+
+
+
+
+
+**Referències**
+
+https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/117-hcpc-hierarchical-clustering-on-principal-components-essentials/
+
+https://www.datanovia.com/en/blog/cluster-analysis-in-r-practical-guide/
+
+Evans WJ, Morley JE, Argilés J, Bales C, Baracos V, Guttridge D, Jatoi A, Kalantar-Zadeh K, Lochs H, Mantovani G, Marks D, Mitch WE, Muscaritoli M, Najand A, Ponikowski P, Rossi Fanelli F, Schambelan M, Schols A, Schuster M, Thomas D, Wolfe R, Anker SD. Cachexia: a new definition. Clin Nutr. 2008 Dec;27(6):793-9. doi: 10.1016/j.clnu.2008.06.013. Epub 2008 Aug 21. PMID: 18718696.
+
+Fearon K, Strasser F, Anker SD, Bosaeus I, Bruera E, Fainsinger RL, Jatoi A, Loprinzi C, MacDonald N, Mantovani G, Davis M, Muscaritoli M, Ottery F, Radbruch L, Ravasco P, Walsh D, Wilcock A, Kaasa S, Baracos VE. Definition and classification of cancer cachexia: an international consensus. Lancet Oncol. 2011 May;12(5):489-95. doi: 10.1016/S1470-2045(10)70218-7. Epub 2011 Feb 4. PMID: 21296615.
+
+
+Argilés JM, Busquets S, Stemmler B, López-Soriano FJ. Cancer cachexia: understanding the molecular basis. Nat Rev Cancer. 2014 Nov;14(11):754-62. doi: 10.1038/nrc3829. Epub 2014 Oct 9. PMID: 25291291.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
