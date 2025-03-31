@@ -1,0 +1,1 @@
+{"frames":[{"func":"packageVersion(\"POMA\")","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0},{"func":"stop(packageNotFoundError(pkg, lib.loc, sys.call()))","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error en packageVersion(\"POMA\"): no hay paquete llamado ‘POMA’\n"}

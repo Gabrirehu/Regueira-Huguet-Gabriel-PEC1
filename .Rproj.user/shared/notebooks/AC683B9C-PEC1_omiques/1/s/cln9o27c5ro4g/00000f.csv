@@ -1,0 +1,3 @@
+"0","boxplot(assay(SumExp)[""Creatine"", ] ~ colData(SumExp)$Muscle.loss,"
+"0","        main=""Creatine por grupo"", "
+"0","        ylab = ""Concentración"", xlab = ""Grupo"")"

@@ -1,0 +1,3 @@
+"0","anotacions <- data.frame(Grup = grups) #Creem un petit dataframe amb la columna grup (cachexia/control)"
+"0","rownames(anotacions) <- colnames(mat_scaled) #Així el heatmap sabrà que x columna és la mostra PIC_XXX (pacient)"
+"0","library(pheatmap)"

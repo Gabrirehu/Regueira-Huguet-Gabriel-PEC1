@@ -1,0 +1,5 @@
+"0","PomaOutliers(norm_data, do = ""analyze"")$polygon_plot
+"
+"2","Error en PomaOutliers(norm_data, do = ""analyze""): 
+  el argumento no fue usado (do = ""analyze"")
+"

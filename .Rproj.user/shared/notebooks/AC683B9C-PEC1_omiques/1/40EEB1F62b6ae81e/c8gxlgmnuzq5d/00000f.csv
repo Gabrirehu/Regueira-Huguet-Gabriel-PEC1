@@ -1,0 +1,10 @@
+"0","args(POMA::PomaOutliers)"
+"1","function (data, method = ""euclidean"", type = ""median"", outcome = NULL, 
+"
+"1","    coef = 2, labels = FALSE) 
+"
+"1","NULL
+"
+"0","packageVersion(""POMA"")"
+"2","Error en packageVersion(""POMA""): no hay paquete llamado ‘POMA’
+"

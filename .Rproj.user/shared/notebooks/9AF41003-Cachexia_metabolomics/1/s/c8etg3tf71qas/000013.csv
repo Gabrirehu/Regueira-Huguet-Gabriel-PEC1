@@ -1,0 +1,7 @@
+"0","Creatina <- assay(se)[""Creatine"", ] #Extraim le concentracions del metabòlit ""creatine"""
+"0","muscle_loss <- colData(se)$Muscle.loss #ExtraIm el grup Muscle.loss"
+"0","boxplot(Creatina ~ muscle_loss,"
+"0","        main = ""Creatina segons Muscle.loss"","
+"0","        xlab = ""Grup"","
+"0","        ylab = ""Concentració de creatina"","
+"0","        ylim = c(0, 1000))"

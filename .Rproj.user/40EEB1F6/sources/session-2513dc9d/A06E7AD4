@@ -1,0 +1,28 @@
+{
+    "id": "A06E7AD4",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1743093230879.0,
+    "source_on_save": false,
+    "relative_order": 10,
+    "properties": {
+        "id": "88ee3c59beda4836ba5c4ecfd13abcab",
+        "name": "colData(cachexia_se)",
+        "title": "colData(cachexia_se)",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 13511022223491186,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1743093230879,
+    "read_only": false,
+    "read_only_alternatives": []
+}

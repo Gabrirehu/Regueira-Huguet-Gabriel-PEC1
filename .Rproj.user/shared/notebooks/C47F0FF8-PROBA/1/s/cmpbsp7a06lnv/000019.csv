@@ -1,0 +1,10 @@
+"0","do_query("
+"0","  input_item = ""study_id"","
+"0","  input_value = ""ST000551"","
+"0","  query_type = ""study"","
+"0","  result_format = ""json"","
+"0","  output_file = ""ST000551_results.txt"""
+"0",")"
+"2","Error en do_query(input_item = ""study_id"", input_value = ""ST000551"", query_type = ""study"", : 
+  los argumentos no fueron usados (query_type = ""study"", result_format = ""json"", output_file = ""ST000551_results.txt"")
+"

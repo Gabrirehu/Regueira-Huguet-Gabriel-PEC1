@@ -1,0 +1,7 @@
+"0","#Com ho hem fet anteriorment, ja tenim els p-valors ordenats dels metabòlits"
+"0","p_valors_ordenats <- sort(p_valors)"
+"0","top_metabolits_heatmap <- names(p_valors_ordenats)[1:10] #Seleccionem els 10 metabòlits més significatius"
+"0","#extraim les dades només per als meta`+bolits més significatius"
+"0","mat <- metabolits[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pacients)"
+"0","#Escalem pels metabòlits (mitjana 0, desviació 1)"
+"0","mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar després"

@@ -1,0 +1,7 @@
+"0","creatina <- assay(cachexia_se)[""Creatine"", ] #Extraiem les concentracions del metabòlit creatina"
+"0","muscle_loss <- colData(cachexia_se)$Muscle.loss #Extraiem el grup Muscle.loss"
+"0","boxplot(creatina ~ muscle_loss, "
+"0","        main = ""Creatina segons Muscle.loss"","
+"0","        xlab = ""Grup"","
+"0","        ylab = expression(""Concentració (""*mu*""M)""),"
+"0","        ylim = c(0, 1000))"

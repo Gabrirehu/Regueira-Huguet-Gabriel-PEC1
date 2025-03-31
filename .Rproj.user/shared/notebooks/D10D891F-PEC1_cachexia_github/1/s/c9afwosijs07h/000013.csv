@@ -1,0 +1,4 @@
+"0","#extraim les dades només per als meta`+bolits més significatius"
+"0","mat <- metabolits[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pacients)"
+"0","#Escalem pels metabòlits (mitjana 0, desviació 1)"
+"0","mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar després"
