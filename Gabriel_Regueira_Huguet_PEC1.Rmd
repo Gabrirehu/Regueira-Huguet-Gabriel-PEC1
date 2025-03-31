@@ -1,5 +1,5 @@
 ---
-title: "Gabriel_Regueira_Huguet_PEC1"
+title: "Anàlisis de dades òmiques: PEC1"
 author: "Gabriel Regueira Huguet"
 date: "2025-03-27"
 output: 
@@ -9,22 +9,22 @@ output:
 ---
 
 
-# Abstract
+# ABSTRACT
+L'objectiu d'aquest estudi ha estat aprendre la funcionalitat de l'objecte *SummarizedExperiment* i familiaritzar-se amb la ruta d'un anàlisi exploratori de dades metabolòmiques. Per fer-ho, s'ha utilitzat un dataset provinent d'un estudi metabolòmic que analitzava perfils metabolòmics de diferents concentracions de metabòlits concentrats en la orina de pacients amb *Cachexia* o pacients control. Aquest dataset amb 77 pacients i 63 metabòlits mesurats s'ha reorganitzat mitjançant l'objecte de classe *SummarizedExperiment* per a fer-ne posteriorment un anàlisi exploratori. L'anàlisi exploratori ha inclòs anàlisis univariants (Boxplots, Boxplots múltiples) i anàlisis multivariants (PCA, Clustering jeràrquic i Heatmap), utilitzant eines no paramètriques perquè les dades no seguien una distribució normal (tests de Wilcoxon). Els resultats han mostrat diferències estadísticament significatives en les concentracions de la majoria de metabòlits entre ambdós grups, suggerint que aquest perfil metabolòmic podria tenir un paper important en la identificació de pacients amb *cachexia*. 
 
-
-# Objectius
+# OBJECTIUS
 Els objectius d'aquest informe són familitaritzar-se amb la ruta d'un anàlisis de dades metabolòmiques, desde la seva importació de dades crues fins al posterior anàlisis exploratori estadístic i interpretació dels resultats. Per a això, serà necessari un seguit de sub-objectius:
 
-- Familiaritzar-se amb l'OOP S4 *SummarizedExperiment* i crear-ne un amb les dades que s'han triat.
+- Familiaritzar-se amb l'OOP S4 *SummarizedExperiment* (Bioconductor, 2024) i crear-ne un amb les dades que s'han triat.
 - Aprendre a utilitzar el repositori github per fer control de versions git, acabant amb un repositori de Github contenint els materials necessaris per a clonar tota la informació de l'estudi.
 - Indagar en les dades per trobar patrons mitjançant el llenguatge de programació R i familiaritzar-se amb els preprocessats de dades necessaris i mètodes que s'utilitzen per fer un anàlisis estadístic exploratori de dades metabolòmiques. 
 
-# Mètodes
+# MÈTODES
 Per a fer aquesta PEC1 s'han utilitzat un conjunt de dades provinents d'un estudi sobre pacients amb càncer, que inclou concentracions de 63 metabòlits diferents en mostres d'orina expressades en $\mu$M. i informació clínica sobre pacients amb *cachexia* i pacients control. Les dades es van importar en format *.csv* des del repositori de GitHub proporcionat per l'enunciat de la PEC1. Mitjançant el programa RStudio, es van importar les dades a través de l'url del mateix repositori i es va estructurar l'informació en un objecte de classe *SummarizedExperiment*, integrant la matriu de dades quantitatives i les metadades clíniques de cada pacient. L'anàlisis exploratori estadístic va incloure un estudi univariant (resums numèrics, boxplots i proves t) i un estudi multivariant mitjançant un anàlisis de components principals (PCA). Seguint amb la exploració de dades, es va realitzar un clustering jeràrquic i un heatmap per identificar patrons de similitud entre les mostres. Tots els anàlisis es van realitzar mitjançant el programa RStudio i el llenguatge de programació d'R. 
 
-# Resultats
+# RESULTATS
 
-## 1- SELECCIONEM UN DATASET DE METABOLÒMICA:
+## 1- Seleccionem un dataset de metabolòmica:
 
 La *cachexia* és un síndrome metabòlic complex, que es mostra habitual en pacients amb càncer. Aquest síndrome es caracteritza per una pèrdua de massa muscular i/o greixosa, inflamació sistèmica, alteracions hormonals i en el metabolisme enegètic. Aquesta pèrdua de massa muscular es tradueix a un catabolisme muscular accelerat, que proboca l'alliberament de aminoàcids com la valina, leucina, alanina, etc. Aquest síndrome proboca que el pacient es trobi en un estat de semi-fam metabòlica, que proboca que hi hagi una demanda energètica elevada i alguns metabòlits intermedis del metabolisme energètic s'acumulen (3-hydrpxybutyrate, pyroglutamate, glutamine). 
 
@@ -37,7 +37,7 @@ human_cachexia_data <- read.csv(url_github, header = TRUE, sep = ",") #Separaci�
 Observem un dataset on les files són les mostres (pacients) i les columnes són els metabòlits analitzats. També podem observar que hi ha una variable que separa els pacients en dos grups, pacients amb *cachexia* i pacients control. 
 
 
-## 2- CREAR UN OBJECTE *SUMMARIZEDEXPERIMENT* 
+## 2- Crear un objecte *SumarizedExperiment*: 
 
 Per a crear un objecte *SummarizedExperiment* necessito una matriu de dades quantitatives (amb les concentracions de metabòlits per pacient) i un *colData* amb informació de les mostres, que en aquest cas és el tipus de grup que pertany cada pacient (*Muscle.loss: cachexia/control*). 
 
@@ -92,15 +92,14 @@ save(cachexia_se, file = "cachexia_se.rda") #Guardem l'arxiu al repositori
 
 
 
-## 3- ANÀLISIS EXPLORATORI:
+## 3- Anàlisis exploratori:
 
-```{r}
+```{r, results = "hide", message = FALSE, warning = FALSE}
 #S'ha fet un resum estadístic per a cada metabòlit (mínim, mitjana, màxim, etc), posem els 5 primer com a exemple:
 apply(assay(cachexia_se)[1:5, ], 1, summary) #Resum numèric dels metabòlits (5 primers)
-```
-```{r}
 dim(cachexia_se)
 ```
+
 
 ```{r}
 #Comprovem que no hi hagi valors faltants (NA) en la matriu de dades
@@ -119,29 +118,29 @@ muscle_loss <- colData(cachexia_se)$Muscle.loss #Extraiem el grup Muscle.loss
 boxplot(creatina ~ muscle_loss, 
         main = "Creatina segons Muscle.loss",
         xlab = "Grup",
-        ylab = "concentració de creatina uM",
+        ylab = expression("Concentració ("*mu*"M)"),
         ylim = c(0, 1000))
 ```
 Fem un test *Wilcoxon* per veure si les distribucions de creatina són diferents entre grups (*Muscle.loss*), sense assumir normalitat:
 ```{r}
 wilcox.test(creatina ~ muscle_loss) 
 ```
-Mitjançant aquest anàlisi bàsic podem observar que el metabòlit creatina mostra una diferència significativa en la concentració entre els grups *Muscle.loss*. Observem que la mitjana en el grup que tenen *cachexia* (pèrdua constant de massa muscular) és significativament superior a la del grup control. Aquests resultats poden indicar que la concentració de creatina en la orina podria estar relacionada amb l'estat de cachexia i, per tant, podria ser un potencial marcador per ajudar a diagnosticar aquesta malaltia. Això té certa coherència amb la fisiopatologia del síndrome, ja que la *cachexia* comporta un elevat catabolisme proteic i muscular que es pot traduïr a un augment de les concentracions extracel·lulars de creatina i, per tant, un augment en la concentració de creatina en la orina dels pacients amb *cachexia*. 
+Mitjançant aquest anàlisi bàsic podem observar que el metabòlit creatina mostra una diferència significativa en la concentració entre els grups *Muscle.loss*. Observem que la mitjana en el grup que tenen *cachexia* (pèrdua constant de massa muscular) és significativament superior a la del grup control. Aquests resultats poden indicar que la concentració de creatina en la orina podria estar relacionada amb l'estat de cachexia i, per tant, podria ser un potencial marcador per ajudar a diagnosticar aquesta malaltia. 
 
 ### Boxplot múltiple: metabòlits més rellevants
 
-Seguidament, seguirem amb l'anàlisis estadístic descriptiu mitjançant un boxplot múltiple. Com que no podem fer un boxplot dels 63 metabòlits, farem un t-test univariant per a cada metabòlit i seleccionarem els 4 metabòlits que tinguin p-valors més baixos (més significació).
+Seguidament, seguirem amb l'anàlisis estadístic descriptiu mitjançant un boxplot múltiple. Com que no podem fer un boxplot dels 63 metabòlits, farem un test de *Wilcoxon* univariant per a cada metabòlit i seleccionarem els 4 metabòlits que tinguin p-valors més baixos (més significació).
 
 ```{r}
 metabolits <- assay(cachexia_se) #Assignem metabolits 
 group <- colData(cachexia_se)$Muscle.loss #Assignem group a la variables Muscle.loss 
-#Fem un test Wilcoxon per cada metabòlit i guardem els p-valors dels t-tests
+#Fem un test Wilcoxon per cada metabòlit i guardem els p-valors dels tests
 p_valors <- apply(metabolits, 1, function(x) {
   suppressWarnings(
-  tryCatch(wilcox.test(x ~ group)$p.value, error = function(e) NA) #Agafem els p_valors dels t-tests de cada metabòlits
+  tryCatch(wilcox.test(x ~ group)$p.value, error = function(e) NA) #Agafem els p_valors dels tests de cada metabòlits
   )
 })
-#Ordenem els metabòlits segons els p-valors que hagin donat els t-tests
+#Ordenem els metabòlits segons els p-valors que hagin donat els tests
 p_valors_ordenats <- sort(p_valors)
 top_metabolits <- names(p_valors_ordenats) [1:4]
 top_metabolits
@@ -168,7 +167,7 @@ ggplot(data_metabolits, aes( x= metabòlit, y = concentració, fill = group)) +
   geom_boxplot(outlier.size = 1) +
   labs(title = "Boxplot múltiple dels metabòlits més rellevants",
        x = "Metabòlit",
-       y = "Concentració") + 
+       y = "Concentració (log10)") + 
   scale_fill_manual(values = c("cachexic" = "red", control = "green")) + #Separem grups per color
   scale_y_log10() + #Apliquem escala logaritmica per fer comparables metabolits amb concentracions massa diferents
   theme_minimal()
@@ -187,20 +186,9 @@ t_data <- t(assay(cachexia_se))
 #És recomanable escalar les variables quan estàn a diferents escales , en el nostre cas algun metabòlit té concentracions molt més elevades que d'altres, per tant escalem:
 pca_resultats <- prcomp(t_data, scale. = TRUE)
 summary(pca_resultats)$importance[, 1:5] #Mostrem els 5 components principals més importants (dels 63PC que surten)
-```
-Observem en els resultats de l'anàlisis de components principals que els dos primers ja tenen una variabilitat del **48.61%**, que ja es considera bastant alta. 
-
-```{r}
 var_explicada <- summary(pca_resultats)$importance[2, ] * 100 #Seleccionem PC1 i PC2
-barplot(var_explicada,
-        main = "Variànça explicada per component",
-        xlab = "Components principals",
-        ylab = "% Variànça explicada",
-)
-
 ```
-
-Observem que a partir de el PC2 ja la resta explica cada cop menys la variànça de les dades. Per tant, decidim quedar-nos amb els dos primers components principals i utilitzarem aquests per a obtenir una representació de les dades en una dimensió reduïda:
+Observem en els resultats de l'anàlisis de components principals que els dos primers ja tenen una variabilitat del **48.61%**, que ja es considera bastant alta. Decidim quedar-nos amb els dos primers components principals i utilitzarem aquests per a obtenir una representació de les dades en una dimensió reduïda:
 
 ```{r}
 cach_control <- colData(cachexia_se)$Muscle.loss
@@ -244,9 +232,13 @@ ggplot(top_PC1, aes(x = reorder(metabolit, PC1), y = PC1)) +
 ```
 Aquest gràfic mostra els 10 metabòlits que més contribueixen a la variànça capturada pel primer component principal (PC1). Com hem pogut observar prèviament, el PC1 és el component principal del qual la seva direcció recull la major part de la variabilitat de les dades, i els valors *loading* indicarien quina força té cada metabòlit en definir aquesta direcció. Podem oobservar com la majoria de metabòlits contribueixen de forma gairebé equitativa a la PC1, destaquem la *Creatine*, que és la que contribueix més. Això té coherència amb l'anàlisi anterior, on ja havíem vist que aquest metabòlit mostrava diferències significatives segons el grup (*cachexia/control*). 
 
-### CLUSTERING JERÀRQUIC
+### Clustering jeràrquic
 
 El clustering jeràquic és un potent recurs per a l'anàlisis exploratori de dades, porporcionant mètodes potents i flexibles per descubrir grups en les dades. Com s'ha mencionat anteriorment, els resultats del test no paramètric de *Wilcoxon* mostren que 55 dels 63 metabòlits de l'estudi presenten diferències significatives. Això suggereix que gairebé totes les variables de l¡estudi contenen informació rellevant per a la classificació, per tant, es va optar per no filtrar i incloure tots els metabòlits a l'anàlisis de clustering jeràrquic. 
+
+```{r, message=FALSE, warning=FALSE}
+library(dendextend)
+```
 
 ```{r, fig.width = 14, fig.height = 4}
 dades_s <- scale(t_data) #Escalem la matriu abans de clusteritzar (mitjana = 0, sd = 1)
@@ -254,7 +246,6 @@ dist_mostres <- dist(dades_s, method = "euclidean") #Calculqem la matriu de dist
 hc <- hclust(dist_mostres, method = "complete") #Mètode de distància escollit: "Complete link", màxim de desimilituds per parells
 grups <- colData(cachexia_se)$Muscle.loss #grups per etiquetal segons Muscle.loss
 #Gràfic del dendograma 
-library(dendextend)
 dend <- as.dendrogram(hc)
 labels_colors(dend) <- ifelse(grups == "cachexic", "limegreen", "orange") #Dividim les mostres segons el grup visualment separat per colors 
 plot(dend, 
@@ -263,7 +254,7 @@ plot(dend,
 
 ```
 
-Observem en el dendrograma que hi ha una separació visible entre els dos grups principals (*cachexia* i *control*), tot i que no està perfectament separada perquè algunes mostres *cachexia* (vermell) queden barrejades amb *control* (blau). Això pot indicar que pot haver efectes tècnics que desconeixem i/o que només alguns metabòlits separen clarament els dos grups (no tots). 
+Observem en el dendrograma que hi ha una separació visible entre els dos grups principals (*cachexia* i *control*), tot i que no està perfectament separada perquè algunes mostres *cachexia* (verd) queden barrejades amb *control* (taronja). Això pot indicar que pot haver efectes tècnics que desconeixem i/o que només alguns metabòlits separen clarament els dos grups (no tots). 
 
 
 ### Heatmap
@@ -274,25 +265,19 @@ Un heatmap amb 63 variables (meatbòlits) seria massa sorollós i difícil d'int
 #Com ho hem fet anteriorment, ja tenim els p-valors ordenats dels metabòlits
 p_valors_ordenats <- sort(p_valors)
 top_metabolits_heatmap <- names(p_valors_ordenats)[1:10] #Seleccionem els 10 metabòlits més significatius
-top_metabolits_heatmap
-```
-```{r}
 #extraim les dades només per als meta`+bolits més significatius
 mat <- metabolits[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pacients)
 #Escalem pels metabòlits (mitjana 0, desviació 1)
 mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar després
 ```
-
-
 El heatmap mostratà les mostres (pacients) i els metabòlits, però no sap quin grup pertany cada mostra. Per tant, hem de fer que el mapa pugui caracteritzar les mostres segons el grup que pertany, li hem de donar la informació.
 
-```{r}
+```{r, results = "hide", message = FALSE, warning = FALSE}
 anotacions <- data.frame(Grup = grups) #Creem un petit dataframe amb la columna grup (cachexia/control)
 rownames(anotacions) <- colnames(mat_scaled) #Així el heatmap sabrà que x columna és la mostra PIC_XXX (pacient)
-head(anotacions)
+library(pheatmap)
 ```
 ```{r}
-library(pheatmap)
 pheatmap(mat_scaled, #Matriu de dades de 10 meatbòlits per 77 mostres (pacients) 
          annotation_col = anotacions, #Afegeix una linea de colors a dalt del mapa indicant si la mostra és cachexic o control
          annotation_colors = list(
@@ -309,38 +294,42 @@ pheatmap(mat_scaled, #Matriu de dades de 10 meatbòlits per 77 mostres (pacients
 
 Com que hem escalat la matriu de dades dels metabòlits, per cada fila de metabòlit la mitjana és 0 i la desviació estàndard és 1. D'aquesta manera la majoria de valors d'un metabòlit queden aprop del 0, però si hi ha algun valor molt alt comparat amb la mitjana, aquesta destacarà sobre la resta i mostrarà una coloració més llunyana del blau/blanc i s'aproparà al vermell. D'aquesta manera, amb el heatmap podem veure quins valors de metabòlits destaquen sobre la resta. 
 
-El dendrograma de dalt mostra com les mostres (pacients) s'agrupen segons la semblança dels seus perfils metabolòmics, d'aquesta manera veiem que les mostres de color verd que pertany al grup que té *cachexia* tendeixen a agrupar-se a la dreta, on es mostren valors dels metabòlits més elevats que les seves mitjanes. Mentre que les mostres de taronja que pertanyen als pacients control, tendeixen a agrupar-se a l'esquerra, amb perfils metabolòmics més propers a la mitjana (color blau). Tot i així, observem en l'extrem esquerre que s'acumulen 5 mostres *cachexia* amb uns metabòlits molt per sobre de la mitjana. 
+El dendrograma de dalt mostra com les mostres (pacients) s'agrupen segons la semblança dels seus perfils metabolòmics, d'aquesta manera veiem que les mostres de color verd que pertany al grup que té *cachexia* tendeixen a agrupar-se a la dreta, on es mostren valors dels metabòlits més elevats que les seves mitjanes (colors allunyats del blau). Mentre que les mostres de taronja que pertanyen als pacients control, tendeixen a agrupar-se a l'esquerra, amb perfils metabolòmics més propers a la mitjana (color blau). Tot i així, observem en l'extrem esquerre que s'acumulen 5 mostres *cachexia* amb uns metabòlits molt per sobre de la mitjana. 
 
 Com ja havíem vist en els anàlisis anteriors, aquest patró reforça la idea que els pacients amb *cachexia* semblen presentar perfils metabolòmics diferenciats, amb concentracions més elevades en diversos metabòlits rellevants. Si ens fixem, de forma general la majoria de mostres del grup control presenten metabòlits amb concentracions tirant més a la normalitat (color blau), mentre que les mostres *cachexia* observem que els seus metabòlits ja tenen alteracions en la coloració mostrant mitjanes de concentracions més elevades. 
 
-Els resultats observats al heatmap i la resta d'anàlisis són consistents amb la literatura científica sobre el síndroma *cachexia*. Ja que *cachexia* és un síndrome caracteritzat per una gran desregulació metabòlica, un augment de la degradació de proteïnes musculars i una activació de la gluconeogènesi i alteració de les vies energètiques (Evans et al., 2009; Argilés et al., 2014). Aquests processos catabòlics provoquen l'alliberament d'aminoàcids al torrent sanguini (valina, glutamina, leucina, alanina, etc) que podem veure reflectits en els pacients amb *cachexia* en el heatmap (majors concentracions, colors allunyats del blau). De la mateixa manera s'observa major presència d'intermedis com 3-hydroxybutyrate, pdoructe de l'oxidació de lípids en contextos de dèficit energètic. A més, observem un augment de quilonate que podria reflectir a l'activació de la via del triptòfan associada a l'estrès inflamatori i oxidatiu, habitual en pacients amb cachexia (Faeron et al., 2011). 
+# DISCUSSIÓ
 
-Per tant, podem concluïr que els patrons observats en els resultats dels anàlisi no només tenen consistència estadística, sinó també una base fisiològica. Aquest conjunt d'evidències suggereix que el perfil metabolòmic pot ser una eina molt útil per a identificar pacients amb *cachexia* i pot oferir un punt de partida per a futurs anàlisis de diagnòstic. 
+Els resultats observats al heatmap i la resta d'anàlisis són consistents amb la literatura científica sobre el síndroma *cachexia*. Ja que *cachexia* és un síndrome caracteritzat per una gran desregulació metabòlica, un augment de la degradació de proteïnes musculars i una activació de la gluconeogènesi i alteració de les vies energètiques (Evans et al., 2009; Argilés et al., 2014). Aquests processos catabòlics provoquen l'alliberament d'aminoàcids al torrent sanguini (valina, leucina, etc) que podem veure reflectits en els pacients amb *cachexia* en el heatmap (majors concentracions, colors allunyats del blau). De la mateixa manera s'observa major presència d'intermedis com 3-hydroxybutyrate, producte de l'oxidació de lípids en contextos de dèficit energètic. A més, observem un augment de quilonate que podria reflectir a l'activació de la via del triptòfan associada a l'estrès inflamatori i oxidatiu, habitual en pacients amb cachexia (Faeron et al., 2011). 
 
+De la mateixa manera, tot i que no es veu tant al heatmap, podem observar en l'anàlisis univariant que la *Creatine* també presenta diferències en les concentracions segons el grup al que pertany el pacient. Aquests resultats també tenen coherència amb la fisiopatologia del síndrome, ja que un dels símptomes més rellevants de *Cachexia* comporta un elevat catabolisme proteic i muscular que es pot traduïr a un augment de les concentracions extracel·lulars de creatina i, en conseqüència, un augment en la concentració de creatina en la orina dels pacients. 
 
+# CONCLUSIÓ
 
-
-
-
-
-
-# Referències
-
-https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/117-hcpc-hierarchical-clustering-on-principal-components-essentials/
-
-https://www.datanovia.com/en/blog/cluster-analysis-in-r-practical-guide/
-
-https://aspteaching.github.io/AMVCasos/
-
-Evans WJ, Morley JE, Argilés J, Bales C, Baracos V, Guttridge D, Jatoi A, Kalantar-Zadeh K, Lochs H, Mantovani G, Marks D, Mitch WE, Muscaritoli M, Najand A, Ponikowski P, Rossi Fanelli F, Schambelan M, Schols A, Schuster M, Thomas D, Wolfe R, Anker SD. Cachexia: a new definition. Clin Nutr. 2008 Dec;27(6):793-9. doi: 10.1016/j.clnu.2008.06.013. Epub 2008 Aug 21. PMID: 18718696.
-
-Fearon K, Strasser F, Anker SD, Bosaeus I, Bruera E, Fainsinger RL, Jatoi A, Loprinzi C, MacDonald N, Mantovani G, Davis M, Muscaritoli M, Ottery F, Radbruch L, Ravasco P, Walsh D, Wilcock A, Kaasa S, Baracos VE. Definition and classification of cancer cachexia: an international consensus. Lancet Oncol. 2011 May;12(5):489-95. doi: 10.1016/S1470-2045(10)70218-7. Epub 2011 Feb 4. PMID: 21296615.
-
-
-Argilés JM, Busquets S, Stemmler B, López-Soriano FJ. Cancer cachexia: understanding the molecular basis. Nat Rev Cancer. 2014 Nov;14(11):754-62. doi: 10.1038/nrc3829. Epub 2014 Oct 9. PMID: 25291291.
+L'anàlisi estadístic exploratori que s'ha realitzat sobre les dades metabolòmiques del dataset *human_cachexia* ha permès identificar patrons associats a símptomes del desenvolupament del síndrome *Cachexia*. Els resultats han mostrat que una gran part dels metabòlits analitzats en la orina dels pacients presenten diferències significatives (anàlisi no paramètric) entre pacients amb *cachexia* i pacients control. Aquests resultats reforcen la hipòtesi que aquest perfil metabolòmic pot reflectir la identificació del mateix síndrome analitzant les alteracions en les concentracions d'aquests metabòlits. Els anàlisis multivariants (PCA, clustering i HEatmap) van poder ser-nos d'ajuda per a identificar aquests patrons, mostrant agrupaments de les mostres segons el grup i observant com cada grup tenia, en general, concentracions de metabòlits diferents. Per tant, es podria dir que els resultats obtinguts suggereixen que utilitzar aquest perfil metabolòmic per l'identificació de pacients amb *cachexia* podria ser una eina molt útil en el futur. Tot i així caldria aprofundir l'estudi i analitzar la seva aplicabilitat clínica en medicina. 
 
 
 
+# REFERÈNCIES
+
+- Evans, W.J., Morley, J.E., Argilés, J., Bales, C., Baracos, V., Guttridge, D., Jatoi, A., Kalantar-Zadeh, K., Lochs, H., Mantovani, G., Marks, D., Mitch, W.E., Muscaritoli, M., Najand, A., Ponikowski, P., Rossi Fanelli, F., Schambelan, M., Schols, A., Schuster, M., Thomas, D., Wolfe, R., & Anker, S.D. (2008). Cachexia: A new definition. *Clinical Nutrition*, 27(6), 793–799. https://doi.org/10.1016/j.clnu.2008.06.013
+
+- Fearon, K., Strasser, F., Anker, S.D., Bosaeus, I., Bruera, E., Fainsinger, R.L., Jatoi, A., Loprinzi, C., MacDonald, N., Mantovani, G., Davis, M., Muscaritoli, M., Ottery, F., Radbruch, L., Ravasco, P., Walsh, D., Wilcock, A., Kaasa, S., & Baracos, V.E. (2011). Definition and classification of cancer cachexia: An international consensus. *The Lancet Oncology*, 12(5), 489–495. https://doi.org/10.1016/S1470-2045(10)70218-7
+
+- Bioconductor (2024). *SummarizedExperiment: SummarizedExperiment Container*. Disponible a: [https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
+
+- Kassambara, A. (2020). *Practical Guide to Cluster Analysis in R: Unsupervised Machine Learning*. Datanovia. Disponible a: [https://www.datanovia.com/en/lessons/cluster-analysis-in-r/](https://www.datanovia.com/en/lessons/cluster-analysis-in-r/)
+
+
+- ASP Teaching (2024). *Anàlisi Multivariant de Casos en R*. Disponible a: [https://aspteaching.github.io/AMVCasos/](https://aspteaching.github.io/AMVCasos/)
+
+- MixOmics Team (2024). *Multivariate Analysis and Integration of Omics Data*. Disponible a: [https://mixomicsteam.github.io/mixOmics-Vignette/](https://mixomicsteam.github.io/mixOmics-Vignette/)
+
+- Universitat Oberta de Catalunya (2024). *Exploració multivariant de dades òmiques*. Materials docents del Màster Universitari d'Anàlisi de Dades, UOC.
+
+- Penet, M.F., Krishnamachary, B., Mironchik, Y., Wildes, F., Poussaint, T.Y., Lisok, A., et al. (2018). Predicting cancer-associated muscle wasting from urinary metabolomics. *Metabolomics*, 14(8), 1–13. [https://doi.org/10.1007/s11306-018-1405-2](https://doi.org/10.1007/s11306-018-1405-2)
+
+- Kassambara, A. (2017). *HCPC - Hierarchical Clustering on Principal Components Essentials*. STHDA. Disponible a: [https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/117-hcpc-hierarchical-clustering-on-principal-components-essentials/](https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/117-hcpc-hierarchical-clustering-on-principal-components-essentials/)
 
 
 
