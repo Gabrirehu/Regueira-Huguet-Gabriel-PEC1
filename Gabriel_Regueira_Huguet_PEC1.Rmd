@@ -112,7 +112,7 @@ Podem observar de forma general que aquestes dades consten d'un OOP *SummarizedE
 Hem realitzat apart un anàlisi del test *Shapiro-Wilk* per saber si les variables numèriques (metabòlits) segueixen una distribució normal. Resulta que cap d'elles segueix una distribució normal i, per tant, haurem de procedir amb l'anàlisis sense asumir normalitat. 
 
 
-```{r}
+```{r, fig.width=5, fig.height=4, echo=FALSE, fig.align='center', fig.cap="Concentració creatina segons grup"}
 creatina <- assay(cachexia_se)["Creatine", ] #Extraiem les concentracions del metabòlit creatina
 muscle_loss <- colData(cachexia_se)$Muscle.loss #Extraiem el grup Muscle.loss
 boxplot(creatina ~ muscle_loss, 
@@ -148,7 +148,7 @@ sum(p_valors < 0.05, na.rm = TRUE) #coompta quants són significatius
 ```
 Aquests són els metabòlits que han donat més nivell de significació fent el test no paramètric de *Wilcoxon*  segons la variable grup *Muscle.loss*. Per tant, haurien de ser els que tenen diferències més significatives de concentracions segons si els pacients tenen *cachexia* o no. També cal recalcar que, **dels 63 metabòlits de l'estudi, 55 metabòlits han donat diferències significatives amb el test de *Wilcoxon* **. Donat que hi han concentracions motl diferents entre els metabòlits, apliquem una escala logarítmica per tal que millor la visualització del *Boxplot múltiple*. 
 
-```{r}
+```{r, echo=FALSE, fig.align='center', fig.cap="Boxplot múltiple de metabòlits més rellevants"}
 library(reshape2)
 library(ggplot2)
 #Seleccionem els metabòlits que ens han sortit
@@ -190,18 +190,17 @@ var_explicada <- summary(pca_resultats)$importance[2, ] * 100 #Seleccionem PC1 i
 ```
 Observem en els resultats de l'anàlisis de components principals que els dos primers ja tenen una variabilitat del **48.61%**, que ja es considera bastant alta. Decidim quedar-nos amb els dos primers components principals i utilitzarem aquests per a obtenir una representació de les dades en una dimensió reduïda:
 
-```{r}
+```{r, fig.width=5, fig.height=4, echo=FALSE, fig.align='center', fig.cap="Distribució de les mostres segons PC1 i PC2"}
 cach_control <- colData(cachexia_se)$Muscle.loss
 pca_d <- as.data.frame(pca_resultats$x) #Cada fila representa una mostra i cada columna un PCA
 pca_d$group <- cach_control #Afegim la classe de cada mostra
 library(ggplot2)
 ggplot(pca_d, aes(x = PC1, y = PC2, color = group)) + #Separem per grup segons el color
-geom_point(size = 3) +
-labs(
-title = "Anàlisis de components principals (PCA)",
+geom_point(size = 1.5) + 
+labs(title = "Distribució de les mostres segons PC1 i PC2",
 x = paste0("PC1(", round(var_explicada[1], 1), "%)"),
 y = paste0("PC2 (", round(var_explicada[2], 1), "%)")
-) + theme_minimal()
+) + theme_minimal(base_size = 8)
 ```
 S’ha realitzar un anàlisi de components principals sobre la matriu de concentracions de metabòlits.
 Prèviament s’han centrat i escalat les dades per a evitar que les diferències d’escala entre les variables
@@ -219,16 +218,16 @@ loadings_pca$metabolit <- rownames(loadings_pca)
 ```
 
 
-```{r}
+```{r, fig.width=5, fig.height=3, echo=FALSE, fig.align='center', fig.cap="Principals metabòlits que contribueixen a PC1"}
 top_PC1 <- loadings_pca[order(abs(loadings_pca$PC1), decreasing =TRUE), ][1:10, ] #Agafem els 10 metabòlits més importants del PC1 i els ordenem en sentit decreixent
 #Grafic
 ggplot(top_PC1, aes(x = reorder(metabolit, PC1), y = PC1)) +
-  geom_col(fill = "steelblue") +
+  geom_col(width = 0.6, fill = "steelblue") +
   coord_flip() + #Cambiem els eixos per a millor visualització
   labs(title = "Principals metabòlits que contribueixen a PC1",
        x = "Metabòlit",
        y = "Magnitud de contribució a PC1 (loadings)") +
-  theme_minimal()
+  theme_minimal(base_size = 8)
 ```
 Aquest gràfic mostra els 10 metabòlits que més contribueixen a la variànça capturada pel primer component principal (PC1). Com hem pogut observar prèviament, el PC1 és el component principal del qual la seva direcció recull la major part de la variabilitat de les dades, i els valors *loading* indicarien quina força té cada metabòlit en definir aquesta direcció. Podem oobservar com la majoria de metabòlits contribueixen de forma gairebé equitativa a la PC1, destaquem la *Creatine*, que és la que contribueix més. Això té coherència amb l'anàlisi anterior, on ja havíem vist que aquest metabòlit mostrava diferències significatives segons el grup (*cachexia/control*). 
 
@@ -240,7 +239,7 @@ El clustering jeràquic és un potent recurs per a l'anàlisis exploratori de da
 library(dendextend)
 ```
 
-```{r, fig.width = 14, fig.height = 4}
+```{r, fig.width=8, fig.height=4, echo=FALSE,  fig.cap="Clustering jeràrquic segons grups"}
 dades_s <- scale(t_data) #Escalem la matriu abans de clusteritzar (mitjana = 0, sd = 1)
 dist_mostres <- dist(dades_s, method = "euclidean") #Calculqem la matriu de distàncies (eucledian)
 hc <- hclust(dist_mostres, method = "complete") #Mètode de distància escollit: "Complete link", màxim de desimilituds per parells
@@ -250,7 +249,7 @@ dend <- as.dendrogram(hc)
 labels_colors(dend) <- ifelse(grups == "cachexic", "limegreen", "orange") #Dividim les mostres segons el grup visualment separat per colors 
 plot(dend, 
      main = "Clustering jeràrquic amb grups",
-     cex = 0.8)
+     cex = 0.1)
 
 ```
 
@@ -272,7 +271,7 @@ mat_scaled <- t(scale(t(mat))) #trasposem, escalem i tornem a transposar despré
 ```
 El heatmap mostratà les mostres (pacients) i els metabòlits, però no sap quin grup pertany cada mostra. Per tant, hem de fer que el mapa pugui caracteritzar les mostres segons el grup que pertany, li hem de donar la informació.
 
-```{r, results = "hide", message = FALSE, warning = FALSE}
+```{r, results = "hide", message = FALSE, warning = FALSE, echo=FALSE, fig.align='center', fig.cap="Heatmap dels 10 metabòlits més significatius"}
 anotacions <- data.frame(Grup = grups) #Creem un petit dataframe amb la columna grup (cachexia/control)
 rownames(anotacions) <- colnames(mat_scaled) #Així el heatmap sabrà que x columna és la mostra PIC_XXX (pacient)
 library(pheatmap)
