@@ -1,4 +1,0 @@
-"0","#Matriu de dades numèriques"
-"0","assay_data1_ <- human_cachexia_data[, -(1:2)] #Eliminem les dues primeres columnes "
-"0","rownames(assay_data1_) <- human_cachexia_data$Patient.ID #Assignem com a nom de fila els identificadors Patient.ID en el dataset"
-"0","assay_data1 <- as.matrix(assay_data1_)"

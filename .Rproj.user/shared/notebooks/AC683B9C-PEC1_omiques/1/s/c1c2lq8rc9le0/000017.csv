@@ -1,9 +1,0 @@
-"0","cd <- colData(norm_data)"
-"0","cd$group_factor <- cd$Muscle.loss"
-"0","colData(norm_data) <- cd"
-"0",""
-"0",""
-"0",""
-"0","PomaOutliers(norm_data)$polygon_plot"
-"2","Error en PomaOutliers(norm_data): objeto 'group_factor' no encontrado
-"

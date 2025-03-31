@@ -1,4 +1,0 @@
-"0","library(SummarizedExperiment) #Carregeum el paquet "
-"0","library(readr) #Per llegir arxius csv"
-"0","library(readxl) #Per llegir arxius exzcel"
-"0","library(dplyr)"

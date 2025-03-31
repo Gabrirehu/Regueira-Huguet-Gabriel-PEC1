@@ -1,4 +1,0 @@
-"0","#creem un data frame amb els ""loadings"" (magnitud de contribució de cada metabòlit al component principal)"
-"0","pca_resultats <- prcomp(t_data, scale. = TRUE)"
-"0","loadings_pca <- as.data.frame(pca_resultats$rotation) #assignem els loadings"
-"0","loadings_pca$metabolit <- rownames(loadings_pca)"

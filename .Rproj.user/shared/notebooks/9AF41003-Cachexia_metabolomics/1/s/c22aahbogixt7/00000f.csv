@@ -1,7 +1,0 @@
-"0","var_explicada <- summary(pca_resultats)$importance[2, ] * 100 #Seleccionem PC1 i PC2 "
-"0","barplot(var_explicada,"
-"0","        main = ""Variànça explicada per component"","
-"0","        xlab = ""Components principals"","
-"0","        ylab = ""% Variànça explicada"", "
-"0",")"
-"0",""

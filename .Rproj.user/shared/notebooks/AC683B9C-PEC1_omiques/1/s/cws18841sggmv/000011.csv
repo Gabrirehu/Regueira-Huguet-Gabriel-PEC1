@@ -1,2 +1,0 @@
-"0","#Normalización de los datos con el paquete POMA"
-"0","norm_data <- PomaNorm(SumExp, method = ""log_pareto"") # "

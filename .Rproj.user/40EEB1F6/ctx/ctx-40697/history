@@ -1,4 +1,0 @@
-syste("git status")
-system("git status")
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-BiocManager::install("SummarizedExperiment")

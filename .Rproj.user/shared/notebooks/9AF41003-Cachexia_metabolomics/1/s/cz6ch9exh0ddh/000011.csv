@@ -1,5 +1,0 @@
-"0","#extraim les dades només per als meta`+bolits més significatius"
-"0","mat <- metab[top_metabolits_heatmap, ] #10 files (metabòlits) x 77 mostres (pacients)"
-"2","Error en metab[top_metabolits_heatmap, ]: 
-  subíndice fuera de  los límites
-"

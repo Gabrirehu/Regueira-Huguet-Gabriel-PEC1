@@ -1,3 +1,0 @@
-"0","#Creem un data frame ambv els loadings"
-"0","loadings_pca <- as.data.frame(pca_resultats$rotation) "
-"0","loadings_pca$metabolit <- rownames(loadings_pca)"

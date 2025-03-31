@@ -1,5 +1,0 @@
-"0","#colData: Informació sobre les mostres (pacients): Muscle.loss"
-"0","col_data1 <- DataFrame("
-"0","  Patient.ID = human_cachexia_data$Patient.ID,"
-"0","  Muscle.loss = human_cachexia_data$Muscle.loss"
-"0",")"

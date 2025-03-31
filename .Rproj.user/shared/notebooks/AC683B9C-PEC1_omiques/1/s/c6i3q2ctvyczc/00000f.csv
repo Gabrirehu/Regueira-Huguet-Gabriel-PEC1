@@ -1,1 +1,0 @@
-"0","SumExp <- SumExp[complete.cases(assay(SumExp)), ] #Eliminamos NA"

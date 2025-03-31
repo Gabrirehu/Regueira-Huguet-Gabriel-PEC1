@@ -1,3 +1,0 @@
-"0","anotacions <- data.frame(Grup = grups) #Creem un petit dataframe amb la columna grup (cachexia/control) i una fila per cada mostra "
-"0","rownames(anotacions) <- colnames(mat_scaled) #Així el heatmap sabrà que x columna és la mostra PIF_xxx i que pertany al grup ""cachexic"", per exemple"
-"0","head(anotacions)"

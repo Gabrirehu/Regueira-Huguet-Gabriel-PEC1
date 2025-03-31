@@ -1,3 +1,0 @@
-"0","#Trasponemos para que la fila sea los pacientes"
-"0","df_metabolitos <- t(assay(SumExp))#añadimos la variable grupo como una columna"
-"0","View(df_metabolitos)"

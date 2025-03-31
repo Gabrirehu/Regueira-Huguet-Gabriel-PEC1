@@ -1,3 +1,0 @@
-"0","#Importem directament les dades crues (raw) desde el repositori de github que proporciona l'enunciat:"
-"0","url_github <- ""https://raw.githubusercontent.com/nutrimetabolomics/metaboData/refs/heads/main/Datasets/2024-Cachexia/human_cachexia.csv"""
-"0","human_cachexia_data <- read.csv(url_github, header = TRUE, sep = "","")"
