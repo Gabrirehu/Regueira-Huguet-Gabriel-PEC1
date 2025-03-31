@@ -10,7 +10,7 @@ output:
 
 
 # ABSTRACT
-L'objectiu d'aquest estudi ha estat aprendre la funcionalitat de l'objecte *SummarizedExperiment* i familiaritzar-se amb la ruta d'un anàlisi exploratori de dades metabolòmiques. Per fer-ho, s'ha utilitzat un dataset provinent d'un estudi metabolòmic que analitzava perfils metabolòmics de diferents concentracions de metabòlits concentrats en la orina de pacients amb *Cachexia* o pacients control. Aquest dataset amb 77 pacients i 63 metabòlits mesurats s'ha reorganitzat mitjançant l'objecte de classe *SummarizedExperiment* per a fer-ne posteriorment un anàlisi exploratori. L'anàlisi exploratori ha inclòs anàlisis univariants (Boxplots, Boxplots múltiples) i anàlisis multivariants (PCA, Clustering jeràrquic i Heatmap), utilitzant eines no paramètriques perquè les dades no seguien una distribució normal (tests de Wilcoxon). Els resultats han mostrat diferències estadísticament significatives en les concentracions de la majoria de metabòlits entre ambdós grups, suggerint que aquest perfil metabolòmic podria tenir un paper important en la identificació de pacients amb *cachexia*. 
+L'objectiu d'aquest estudi ha estat aprendre la funcionalitat de l'objecte *SummarizedExperiment* i familiaritzar-se amb la ruta d'un anàlisi exploratori de dades metabolòmiques. Per fer-ho, s'ha utilitzat un dataset provinent d'un estudi que analitzava perfils metabolòmics de diferents concentracions de metabòlits en la orina de pacients amb *Cachexia* o pacients control. Aquest dataset amb 77 pacients i 63 metabòlits mesurats s'ha reorganitzat mitjançant l'objecte de classe *SummarizedExperiment* per a fer-ne posteriorment un anàlisi exploratori. L'anàlisi exploratori ha inclòs anàlisis univariants (Boxplots, Boxplots múltiples) i anàlisis multivariants (PCA, Clustering jeràrquic i Heatmap), utilitzant eines no paramètriques perquè les dades no seguien una distribució normal (tests de Wilcoxon). Els resultats han mostrat diferències estadísticament significatives en les concentracions de la majoria de metabòlits entre ambdós grups, suggerint que aquest perfil metabolòmic podria tenir un paper important en la identificació de pacients amb *cachexia*. 
 
 # OBJECTIUS
 Els objectius d'aquest informe són familitaritzar-se amb la ruta d'un anàlisis de dades metabolòmiques, desde la seva importació de dades crues fins al posterior anàlisis exploratori estadístic i interpretació dels resultats. Per a això, serà necessari un seguit de sub-objectius:
@@ -20,9 +20,10 @@ Els objectius d'aquest informe són familitaritzar-se amb la ruta d'un anàlisis
 - Indagar en les dades per trobar patrons mitjançant el llenguatge de programació R i familiaritzar-se amb els preprocessats de dades necessaris i mètodes que s'utilitzen per fer un anàlisis estadístic exploratori de dades metabolòmiques. 
 
 # MÈTODES
-Per a fer aquesta PEC1 s'han utilitzat un conjunt de dades provinents d'un estudi sobre pacients amb càncer, que inclou concentracions de 63 metabòlits diferents en mostres d'orina expressades en $\mu$M. i informació clínica sobre pacients amb *cachexia* i pacients control. Les dades es van importar en format *.csv* des del repositori de GitHub proporcionat per l'enunciat de la PEC1. Mitjançant el programa RStudio, es van importar les dades a través de l'url del mateix repositori i es va estructurar l'informació en un objecte de classe *SummarizedExperiment*, integrant la matriu de dades quantitatives i les metadades clíniques de cada pacient. L'anàlisis exploratori estadístic va incloure un estudi univariant (resums numèrics, boxplots i proves t) i un estudi multivariant mitjançant un anàlisis de components principals (PCA). Seguint amb la exploració de dades, es va realitzar un clustering jeràrquic i un heatmap per identificar patrons de similitud entre les mostres. Tots els anàlisis es van realitzar mitjançant el programa RStudio i el llenguatge de programació d'R. 
+Per a fer aquesta PEC1 s'han utilitzat un conjunt de dades provinents d'un estudi sobre pacients amb càncer, que inclou concentracions de 63 metabòlits diferents en mostres d'orina expressades en $\mu$M. i informació clínica sobre pacients amb *cachexia* i pacients control. Les dades es van importar en format *.csv* des del repositori de GitHub proporcionat per l'enunciat de la PEC1. Mitjançant el programa RStudio, es van importar les dades a través de l'url del mateix repositori i es va estructurar l'informació en un objecte de classe *SummarizedExperiment*, integrant la matriu de dades quantitatives i les metadades clíniques de cada pacient. L'anàlisis exploratori estadístic va incloure un estudi univariant (resums numèrics, boxplots i tests de *Wilcoxon*) i un estudi multivariant mitjançant un anàlisis de components principals (PCA). Seguint amb la exploració de dades, es va realitzar un clustering jeràrquic i un heatmap per identificar patrons de similitud entre les mostres. Tots els anàlisis es van realitzar mitjançant el programa RStudio i el llenguatge de programació d'R. 
 
 # RESULTATS
+**Url repositori GitHub:** https://github.com/Gabrirehu/Regueira-Huguet-Gabriel-PEC1.git
 
 ## 1- Seleccionem un dataset de metabolòmica:
 
@@ -253,7 +254,8 @@ plot(dend,
 
 ```
 
-Observem en el dendrograma que hi ha una separació visible entre els dos grups principals (*cachexia* i *control*), tot i que no està perfectament separada perquè algunes mostres *cachexia* (verd) queden barrejades amb *control* (taronja). Això pot indicar que pot haver efectes tècnics que desconeixem i/o que només alguns metabòlits separen clarament els dos grups (no tots). 
+Observem en el dendrograma que hi han dos grups principals, un amb només una bifurcació i l'altre, que conté gairebé totes les mostres, que té moltes subdivisions. Dintre del clúster amb més mostres trobem vàries subdivisions que acaben amb una separació visible entre els dos grups de pacients. EN conjunt, aquest dendograma pot suggerir que els metabòlits permeten identificar patrons que diferencien els dos grups (*cachexia/control*), però aquesta diferenciació no es del tot clara a causa de la quantitat de subdivisions de clústers  i la barreja de msotres d'ambdós grups dins d'aquestes subdivisions. 
+
 
 
 ### Heatmap
@@ -307,7 +309,7 @@ De la mateixa manera, tot i que no es veu tant al heatmap, podem observar en l'a
 
 L'anàlisi estadístic exploratori que s'ha realitzat sobre les dades metabolòmiques del dataset *human_cachexia* ha permès identificar patrons associats a símptomes del desenvolupament del síndrome *Cachexia*. Els resultats han mostrat que una gran part dels metabòlits analitzats en la orina dels pacients presenten diferències significatives (anàlisi no paramètric) entre pacients amb *cachexia* i pacients control. Aquests resultats reforcen la hipòtesi que aquest perfil metabolòmic pot reflectir la identificació del mateix síndrome analitzant les alteracions en les concentracions d'aquests metabòlits. Els anàlisis multivariants (PCA, clustering i HEatmap) van poder ser-nos d'ajuda per a identificar aquests patrons, mostrant agrupaments de les mostres segons el grup i observant com cada grup tenia, en general, concentracions de metabòlits diferents. Per tant, es podria dir que els resultats obtinguts suggereixen que utilitzar aquest perfil metabolòmic per l'identificació de pacients amb *cachexia* podria ser una eina molt útil en el futur. Tot i així caldria aprofundir l'estudi i analitzar la seva aplicabilitat clínica en medicina. 
 
-
+**Url repositori GitHub:** https://github.com/Gabrirehu/Regueira-Huguet-Gabriel-PEC1.git
 
 # REFERÈNCIES
 
